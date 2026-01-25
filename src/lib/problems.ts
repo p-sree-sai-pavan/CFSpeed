@@ -6,7 +6,17 @@ let categoriesCache: any = null;
 export async function getCategories() {
     if (categoriesCache) return categoriesCache;
 
-    const filePath = path.join(process.cwd(), 'public', 'categories.json');
+    // In Vercel, the file is likely at the root if we use process.cwd() correctly
+    // or we can try to resolve it relative to the project root.
+    let filePath = path.join(process.cwd(), 'public', 'categories.json');
+
+    // Check if file exists, if not try adding 'cfspeed' prefix (local dev vs vercel root diff)
+    try {
+        await fs.access(filePath);
+    } catch {
+        filePath = path.join(process.cwd(), 'cfspeed', 'public', 'categories.json');
+    }
+
     const fileContent = await fs.readFile(filePath, 'utf-8');
     categoriesCache = JSON.parse(fileContent);
     return categoriesCache;
