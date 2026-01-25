@@ -1,0 +1,224 @@
+{
+  "elite": {
+    "percentile_target": "p5",
+    "levels": {
+      "A": {
+        "count": 3032,
+        "time_range": "0.7-13.9 min"
+      },
+      "B": {
+        "count": 2477,
+        "time_range": "13.9-30.3 min"
+      },
+      "C": {
+        "count": 2018,
+        "time_range": "30.3-46.5 min"
+      },
+      "D": {
+        "count": 1012,
+        "time_range": "46.5-60.1 min"
+      },
+      "E": {
+        "count": 365,
+        "time_range": "60.1-72.2 min"
+      },
+      "F": {
+        "count": 184,
+        "time_range": "72.2-119.4 min"
+      },
+      "G": {
+        "count": 92,
+        "time_range": "119.4-6475.3 min"
+      },
+      "H": {
+        "count": 2330,
+        "time_range": "N/A"
+      }
+    }
+  },
+  "excellent": {
+    "percentile_target": "p20",
+    "levels": {
+      "A": {
+        "count": 3030,
+        "time_range": "1.2-22.6 min"
+      },
+      "B": {
+        "count": 2481,
+        "time_range": "22.6-48.3 min"
+      },
+      "C": {
+        "count": 2016,
+        "time_range": "48.3-69.3 min"
+      },
+      "D": {
+        "count": 1010,
+        "time_range": "69.3-87.1 min"
+      },
+      "E": {
+        "count": 367,
+        "time_range": "87.1-124.5 min"
+      },
+      "F": {
+        "count": 184,
+        "time_range": "124.5-814.8 min"
+      },
+      "G": {
+        "count": 92,
+        "time_range": "814.8-17126.0 min"
+      },
+      "H": {
+        "count": 2330,
+        "time_range": "N/A"
+      }
+    }
+  },
+  "standard": {
+    "percentile_target": "p40",
+    "levels": {
+      "A": {
+        "count": 3031,
+        "time_range": "1.8-33.6 min"
+      },
+      "B": {
+        "count": 2477,
+        "time_range": "33.6-65.9 min"
+      },
+      "C": {
+        "count": 2020,
+        "time_range": "65.9-88.0 min"
+      },
+      "D": {
+        "count": 1009,
+        "time_range": "88.0-110.2 min"
+      },
+      "E": {
+        "count": 367,
+        "time_range": "110.2-180.3 min"
+      },
+      "F": {
+        "count": 184,
+        "time_range": "180.3-2500.4 min"
+      },
+      "G": {
+        "count": 92,
+        "time_range": "2500.4-18983.0 min"
+      },
+      "H": {
+        "count": 2330,
+        "time_range": "N/A"
+      }
+    }
+  },
+  "learning": {
+    "percentile_target": "p55",
+    "levels": {
+      "A": {
+        "count": 3030,
+        "time_range": "2.4-44.1 min"
+      },
+      "B": {
+        "count": 2478,
+        "time_range": "44.1-79.3 min"
+      },
+      "C": {
+        "count": 2020,
+        "time_range": "79.3-99.5 min"
+      },
+      "D": {
+        "count": 1009,
+        "time_range": "99.5-127.0 min"
+      },
+      "E": {
+        "count": 367,
+        "time_range": "127.0-246.7 min"
+      },
+      "F": {
+        "count": 184,
+        "time_range": "246.7-4561.5 min"
+      },
+      "G": {
+        "count": 92,
+        "time_range": "4561.5-20926.1 min"
+      },
+      "H": {
+        "count": 2330,
+        "time_range": "N/A"
+      }
+    }
+  },
+  "basic": {
+    "percentile_target": "p75",
+    "levels": {
+      "A": {
+        "count": 3030,
+        "time_range": "3.8-64.7 min"
+      },
+      "B": {
+        "count": 2480,
+        "time_range": "64.7-98.3 min"
+      },
+      "C": {
+        "count": 2018,
+        "time_range": "98.3-114.6 min"
+      },
+      "D": {
+        "count": 1009,
+        "time_range": "114.6-155.8 min"
+      },
+      "E": {
+        "count": 367,
+        "time_range": "155.8-673.0 min"
+      },
+      "F": {
+        "count": 184,
+        "time_range": "673.0-8332.9 min"
+      },
+      "G": {
+        "count": 92,
+        "time_range": "8332.9-21346.2 min"
+      },
+      "H": {
+        "count": 2330,
+        "time_range": "N/A"
+      }
+    }
+  },
+  "beginner": {
+    "percentile_target": "p95",
+    "levels": {
+      "A": {
+        "count": 3032,
+        "time_range": "9.0-106.4 min"
+      },
+      "B": {
+        "count": 2482,
+        "time_range": "106.4-116.8 min"
+      },
+      "C": {
+        "count": 2013,
+        "time_range": "116.8-138.8 min"
+      },
+      "D": {
+        "count": 1010,
+        "time_range": "138.8-220.6 min"
+      },
+      "E": {
+        "count": 367,
+        "time_range": "220.6-1319.8 min"
+      },
+      "F": {
+        "count": 184,
+        "time_range": "1319.8-9950.0 min"
+      },
+      "G": {
+        "count": 92,
+        "time_range": "9950.0-29411.3 min"
+      },
+      "H": {
+        "count": 2330,
+        "time_range": "N/A"
+      }
+    }
+  }
+}
