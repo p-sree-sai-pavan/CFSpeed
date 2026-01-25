@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/db";
 import { verifyCFHandle } from "@/lib/cf";
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     // 1. Check Auth
