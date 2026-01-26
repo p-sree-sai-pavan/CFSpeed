@@ -141,9 +141,33 @@ export default function ProfilePage() {
                             <div>
                                 <h2 className="text-xl font-bold mb-2">No Codeforces Account Linked</h2>
                                 <p className="text-zinc-600 mb-4">Link your account to see your stats here.</p>
-                                <form action="/api/link-cf" method="POST" className="flex gap-2">
-                                    <input type="text" name="handle" placeholder="Enter CF Handle" className="border px-3 py-2 rounded" />
-                                    <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Link</button>
+                                <form onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+                                    const handle = formData.get('handle');
+                                    setLoading(true);
+                                    try {
+                                        const res = await fetch('/api/cf/link', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ handle }),
+                                        });
+                                        const data = await res.json();
+                                        if (res.ok) {
+                                            window.location.reload();
+                                        } else {
+                                            alert('Error: ' + data.error);
+                                        }
+                                    } catch (err) {
+                                        alert('Failed to link account');
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }} className="flex gap-2">
+                                    <input type="text" name="handle" placeholder="Enter CF Handle" className="border px-3 py-2 rounded text-black" required />
+                                    <button type="submit" disabled={loading} className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50">
+                                        {loading ? 'Linking...' : 'Link'}
+                                    </button>
                                 </form>
                             </div>
                         )}
