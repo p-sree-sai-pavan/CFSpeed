@@ -1,44 +1,52 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-let categoriesCache: any = null;
+const stageCache: Record<string, any> = {};
 
-export async function getCategories() {
-    if (categoriesCache) return categoriesCache;
+async function getStageData(stage: string) {
+    if (stageCache[stage]) return stageCache[stage];
 
     // In Vercel, the file is likely at the root if we use process.cwd() correctly
     // or we can try to resolve it relative to the project root.
-    let filePath = path.join(process.cwd(), 'public', 'categories.json');
+    // We look for 'categories/{stage}.json'
+    let filePath = path.join(process.cwd(), 'public', 'categories', `${stage}.json`);
 
     // Check if file exists, if not try adding 'cfspeed' prefix (local dev vs vercel root diff)
     try {
         await fs.access(filePath);
     } catch {
-        filePath = path.join(process.cwd(), 'cfspeed', 'public', 'categories.json');
+        // Fallback for local dev if CWD is not project root
+        filePath = path.join(process.cwd(), 'cfspeed', 'public', 'categories', `${stage}.json`);
     }
 
-    const fileContent = await fs.readFile(filePath, 'utf-8');
-    categoriesCache = JSON.parse(fileContent);
-    return categoriesCache;
+    try {
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+        const data = JSON.parse(fileContent);
+        stageCache[stage] = data;
+        return data;
+    } catch (error) {
+        console.error(`[getStageData] Error loading ${stage}:`, error);
+        return null;
+    }
 }
 
 export async function getRandomProblem(stage: string, level: string, tier: string, excludeSet?: Set<string>) {
-    const data = await getCategories();
-    console.log('[getRandomProblem] Stages available:', Object.keys(data));
+    console.log(`[getRandomProblem] Request: ${stage} / ${level} / ${tier}`);
 
-    const stageData = data[stage];
+    const stageData = await getStageData(stage);
+
     if (!stageData) {
-        console.log('[getRandomProblem] Stage not found:', stage);
+        console.log('[getRandomProblem] Stage data not found:', stage);
         return null;
     }
-    console.log('[getRandomProblem] Stage found, tiers:', Object.keys(stageData.tiers || {}));
 
-    const tierData = stageData.tiers[tier];
+    // stageData is now the object for that specific stage, so we access tiers directly
+    const tierData = stageData.tiers?.[tier];
+
     if (!tierData || !tierData.problems || tierData.problems.length === 0) {
-        console.log('[getRandomProblem] Tier not found or empty:', tier, tierData);
+        console.log('[getRandomProblem] Tier not found or empty:', tier);
         return null;
     }
-    console.log('[getRandomProblem] Tier found, problems count:', tierData.problems.length);
 
     // Filter out excluded problems
     let candidates = tierData.problems;

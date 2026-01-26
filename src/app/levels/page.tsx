@@ -1,8 +1,6 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import LevelCard from '@/components/LevelCard';
 import { STAGES, LEVEL_MAPPING } from '@/lib/constants';
+import levelsSummary from '../../../public/levels-summary.json';
 
 interface LevelsSummary {
     [stage: string]: {
@@ -16,27 +14,32 @@ interface LevelsSummary {
     };
 }
 
-export default function LevelsPage() {
-    const [selectedStage, setSelectedStage] = useState('elite');
-    const [summary, setSummary] = useState<LevelsSummary | null>(null);
+// Type assertion for imported JSON
+const summary = levelsSummary as LevelsSummary;
 
-    useEffect(() => {
-        fetch('/levels-summary.json')
-            .then((res) => res.json())
-            .then((data) => setSummary(data));
-    }, []);
+interface PageProps {
+    searchParams: Promise<{ stage?: string }>;
+}
 
-    if (!summary) {
-        return (
-            <div className="flex h-screen items-center justify-center bg-zinc-950 text-white">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
-            </div>
-        );
-    }
-
+export default async function LevelsPage({ searchParams }: PageProps) {
+    // Read stage from URL query param, default to 'elite'
+    const params = await searchParams;
+    const selectedStage = params.stage || 'elite';
     const currentStageData = summary[selectedStage];
     const currentStageInfo = STAGES.find(s => s.id === selectedStage)!;
 
+    // Fallback if invalid stage
+    if (!currentStageData) {
+        const fallbackStage = 'elite';
+        const fallbackData = summary[fallbackStage];
+        const fallbackInfo = STAGES.find(s => s.id === fallbackStage)!;
+        return renderPage(fallbackStage, fallbackData, fallbackInfo);
+    }
+
+    return renderPage(selectedStage, currentStageData, currentStageInfo);
+}
+
+function renderPage(selectedStage: string, currentStageData: LevelsSummary[string], currentStageInfo: typeof STAGES[number]) {
     return (
         <div className="min-h-screen bg-zinc-950 px-4 py-20 md:px-8 relative overflow-hidden">
             {/* Background Blobs */}
@@ -58,9 +61,9 @@ export default function LevelsPage() {
                 <div className="mb-12 overflow-x-auto pb-4 scrollbar-hide">
                     <div className="flex min-w-max gap-2 p-1.5 rounded-2xl bg-zinc-900/50 backdrop-blur-xl ring-1 ring-white/10 md:inline-flex">
                         {STAGES.map((stage) => (
-                            <button
+                            <a
                                 key={stage.id}
-                                onClick={() => setSelectedStage(stage.id)}
+                                href={`/levels?stage=${stage.id}`}
                                 className={`relative px-6 py-3 text-sm font-bold transition-all rounded-xl ${selectedStage === stage.id
                                     ? 'text-white shadow-lg ring-1 ring-white/20 scale-[1.02]'
                                     : 'text-zinc-500 hover:text-white hover:bg-white/5'
@@ -70,7 +73,7 @@ export default function LevelsPage() {
                                     <div className={`absolute inset-0 -z-10 rounded-xl bg-gradient-to-r ${stage.color} opacity-20`} />
                                 )}
                                 <span className="relative z-10">{stage.name}</span>
-                            </button>
+                            </a>
                         ))}
                     </div>
                 </div>

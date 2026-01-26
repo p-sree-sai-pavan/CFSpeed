@@ -1,63 +1,12 @@
-'use client';
+import { Calendar, Clock, ExternalLink } from 'lucide-react';
+import { Contest } from '@/lib/cf';
 
-import { useEffect, useState } from 'react';
-import { Calendar, Clock, ExternalLink, RefreshCw } from 'lucide-react';
-
-interface Contest {
-    id: number;
-    name: string;
-    type: string;
-    phase: string;
-    frozen: boolean;
-    durationSeconds: number;
-    startTimeSeconds: number;
-    relativeTimeSeconds: number;
+interface UpcomingContestsProps {
+    contests: Contest[];
 }
 
-export default function UpcomingContests() {
-    const [contests, setContests] = useState<Contest[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
-
-    useEffect(() => {
-        const fetchContests = async () => {
-            try {
-                // Fetch Codeforces contests
-                const res = await fetch('https://codeforces.com/api/contest.list?gym=false');
-                const data = await res.json();
-
-                if (data.status === 'OK') {
-                    // Filter for upcoming contests (phase = BEFORE)
-                    const upcoming = data.result
-                        .filter((c: Contest) => c.phase === 'BEFORE')
-                        .sort((a: Contest, b: Contest) => a.startTimeSeconds - b.startTimeSeconds)
-                        .slice(0, 3); // Take top 3
-                    setContests(upcoming);
-                } else {
-                    setError(true);
-                }
-            } catch (err) {
-                console.error(err);
-                setError(true);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchContests();
-    }, []);
-
-    if (loading) return (
-        <div className="w-full max-w-4xl mt-16 p-6 rounded-2xl bg-zinc-900/50 border border-white/5 animate-pulse">
-            <div className="h-6 w-48 bg-zinc-800 rounded mb-4" />
-            <div className="space-y-3">
-                <div className="h-16 w-full bg-zinc-800/50 rounded-xl" />
-                <div className="h-16 w-full bg-zinc-800/50 rounded-xl" />
-            </div>
-        </div>
-    );
-
-    if (error || contests.length === 0) return null;
+export default function UpcomingContests({ contests }: UpcomingContestsProps) {
+    if (contests.length === 0) return null;
 
     return (
         <div className="w-full max-w-4xl mt-20 relative z-10 px-4">

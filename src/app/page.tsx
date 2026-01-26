@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import UpcomingContests from '@/components/UpcomingContests';
+import { getUpcomingContests } from '@/lib/cf';
 
-export default function Home() {
+export default async function Home() {
+  const contests = await getUpcomingContests();
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 px-4 text-center text-white py-20">
       <div className="relative mb-8">
@@ -48,7 +51,7 @@ export default function Home() {
       </div>
 
       {/* Live News Section */}
-      <UpcomingContests />
+      <UpcomingContests contests={contests} />
     </div>
   );
 }

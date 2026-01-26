@@ -2,6 +2,17 @@
 
 const CF_API_BASE = 'https://codeforces.com/api';
 
+export interface Contest {
+    id: number;
+    name: string;
+    type: string;
+    phase: string;
+    frozen: boolean;
+    durationSeconds: number;
+    startTimeSeconds: number;
+    relativeTimeSeconds: number;
+}
+
 export interface CFSubmission {
     id: number;
     contestId: number;
@@ -25,7 +36,9 @@ export interface CFUser {
 // Verify if a Codeforces handle exists
 export async function verifyCFHandle(handle: string): Promise<CFUser | null> {
     try {
-        const res = await fetch(`${CF_API_BASE}/user.info?handles=${handle}`);
+        const res = await fetch(`${CF_API_BASE}/user.info?handles=${handle}`, {
+            next: { revalidate: 3600 } // Cache user info for 1 hour
+        });
         const data = await res.json();
 
         if (data.status === 'OK' && data.result.length > 0) {
@@ -45,7 +58,8 @@ export async function getRecentSubmissions(
 ): Promise<CFSubmission[]> {
     try {
         const res = await fetch(
-            `${CF_API_BASE}/user.status?handle=${handle}&from=1&count=${count}`
+            `${CF_API_BASE}/user.status?handle=${handle}&from=1&count=${count}`,
+            { cache: 'no-store' } // Always fetch fresh submissions for verification
         );
         const data = await res.json();
 
@@ -89,4 +103,25 @@ export function getProblemUrl(problemId: string): string {
         return `https://codeforces.com/contest/${contestId}/problem/${index}`;
     }
     return `https://codeforces.com/problemset/problem/${problemId.slice(0, -1)}/${problemId.slice(-1)}`;
+}
+
+// Fetch upcoming contests with caching
+export async function getUpcomingContests(): Promise<Contest[]> {
+    try {
+        const res = await fetch(`${CF_API_BASE}/contest.list?gym=false`, {
+            next: { revalidate: 300 } // Cache for 5 minutes
+        });
+        const data = await res.json();
+
+        if (data.status === 'OK') {
+            return data.result
+                .filter((c: Contest) => c.phase === 'BEFORE')
+                .sort((a: Contest, b: Contest) => a.startTimeSeconds - b.startTimeSeconds)
+                .slice(0, 3);
+        }
+        return [];
+    } catch (error) {
+        console.error('Error fetching contests:', error);
+        return [];
+    }
 }

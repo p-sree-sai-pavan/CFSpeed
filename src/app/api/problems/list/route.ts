@@ -4,7 +4,8 @@ import fs from 'fs/promises';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { LEVEL_MAPPING } from '@/lib/constants';
-import { fetchUserSolvedWithStatus } from '@/lib/codeforces';
+import { getSolvedFromCache } from '@/lib/codeforces';
+import { prisma } from '@/lib/db';
 
 // Define the shape of a problem
 interface Problem {
@@ -32,14 +33,17 @@ export async function GET(request: Request) {
     const modifier = sortOrder === 'asc' ? 1 : -1;
 
     try {
-        // 1. Fetch User Submissions if handle exists
+        // 1. Get solved problems from DB cache (instant, <10ms)
         let solvedSet = new Set<string>();
-        let attemptedSet = new Set<string>();
 
-        if (session?.user?.cfHandle) {
-            const status = await fetchUserSolvedWithStatus(session.user.cfHandle);
-            solvedSet = status.solved;
-            attemptedSet = status.attempted;
+        if (session?.user?.email) {
+            const user = await prisma.user.findUnique({
+                where: { email: session.user.email },
+                select: { id: true }
+            });
+            if (user) {
+                solvedSet = await getSolvedFromCache(user.id);
+            }
         }
 
         // 2. Read Static Data
@@ -70,9 +74,8 @@ export async function GET(request: Request) {
                     if (problemMap.has(pid)) continue;
 
                     let status = 'unsolved';
-                    // If solved, it overrides 'wrong'
+                    // Check if solved in DB cache
                     if (solvedSet.has(pid)) status = 'solved';
-                    else if (attemptedSet.has(pid)) status = 'wrong';
 
                     problemMap.set(pid, {
                         contest_id: p.contest_id,

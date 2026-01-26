@@ -25,14 +25,20 @@ export default function Timer({ initialSeconds, onComplete, isActive }: TimerPro
     useEffect(() => {
         let interval: NodeJS.Timeout;
 
-        if (isActive && timeLeft > 0) {
+        if (isActive) {
             interval = setInterval(() => {
-                setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+                setTimeLeft((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(interval);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
             }, 1000);
         }
 
         return () => clearInterval(interval);
-    }, [isActive, timeLeft]);
+    }, [isActive]); // Only depend on isActive, not timeLeft
 
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;

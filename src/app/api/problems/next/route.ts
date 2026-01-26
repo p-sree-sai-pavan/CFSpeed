@@ -4,7 +4,8 @@ import { LEVEL_MAPPING } from '@/lib/constants';
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { fetchUserSolvedWithStatus } from '@/lib/codeforces';
+import { getSolvedFromCache } from '@/lib/codeforces';
+import { prisma } from '@/lib/db';
 
 export async function GET(request: Request) {
     const session = await getServerSession(authOptions);
@@ -22,15 +23,19 @@ export async function GET(request: Request) {
     }
 
     try {
+        // Get solved problems from DB cache (instant, <10ms)
         let excludeSet = new Set<string>();
-        if (session?.user?.cfHandle) {
-            const status = await fetchUserSolvedWithStatus(session.user.cfHandle);
-            excludeSet = status.solved;
+        if (session?.user?.email) {
+            const user = await prisma.user.findUnique({
+                where: { email: session.user.email },
+                select: { id: true }
+            });
+            if (user) {
+                excludeSet = await getSolvedFromCache(user.id);
+            }
         }
 
-        console.log('[DEBUG] Stage:', stage, 'Level:', level, 'Tier:', levelInfo.tier);
         const problem = await getRandomProblem(stage, level, levelInfo.tier, excludeSet);
-        console.log('[DEBUG] Problem result:', problem);
 
         if (!problem) {
             return NextResponse.json({ error: 'No problems found (or all solved!)' }, { status: 404 });

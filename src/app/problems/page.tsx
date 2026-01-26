@@ -77,8 +77,9 @@ function ProblemView() {
                 } else if (verdict === 'TIMEOUT') {
                     handleTimeout();
                 } else if (verdict === 'WRONG') {
-                    // Maybe show a "Wrong Answer" toast?
-                    alert("Wrong Answer detected!");
+                    // Just show notification, don't stop the timer or change state
+                    // User can keep trying
+                    console.log("Wrong Answer - user can try again");
                 }
             }
         };
