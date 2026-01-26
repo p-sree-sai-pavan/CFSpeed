@@ -26,6 +26,7 @@ export const authOptions = {
             return session;
         },
     },
+    debug: true, // Enable debug logs for Vercel
 };
 
 const handler = NextAuth(authOptions);
