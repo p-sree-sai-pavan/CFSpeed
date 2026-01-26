@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./public/categories/**/*'],
+  },
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
