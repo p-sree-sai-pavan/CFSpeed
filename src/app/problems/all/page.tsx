@@ -34,10 +34,12 @@ export default function ProblemsListPage() {
     }, [search]);
 
     useEffect(() => {
-        fetchProblems();
+        const controller = new AbortController();
+        fetchProblems(controller.signal);
+        return () => controller.abort();
     }, [page, debouncedSearch, selectedStage, sortConfig]);
 
-    const fetchProblems = async () => {
+    const fetchProblems = async (signal?: AbortSignal) => {
         setLoading(true);
         try {
             const params = new URLSearchParams({
@@ -48,7 +50,7 @@ export default function ProblemsListPage() {
                 sortBy: sortConfig.key,
                 sortOrder: sortConfig.direction
             });
-            const res = await fetch(`/api/problems/list?${params}`);
+            const res = await fetch(`/api/problems/list?${params}`, { signal });
             const data = await res.json();
             if (res.ok && Array.isArray(data.problems)) {
                 setProblems(data.problems);
@@ -58,6 +60,7 @@ export default function ProblemsListPage() {
                 console.error('API Error:', data.error);
             }
         } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') return;
             console.error('Error:', error);
             setProblems([]);
         } finally {
@@ -171,12 +174,21 @@ export default function ProblemsListPage() {
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex flex-wrap gap-1">
-                                                    {Array.from(new Set(problem.tags)).slice(0, 3).map((tag, i) => (
-                                                        <span key={`${tag}-${i}`} className="text-xs text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">
-                                                            {tag}
-                                                        </span>
-                                                    ))}
-                                                    {new Set(problem.tags).size > 3 && <span className="text-xs text-zinc-600">+{new Set(problem.tags).size - 3}</span>}
+                                                    {(() => {
+                                                        const uniqueTags = Array.from(new Set(problem.tags));
+                                                        const displayTags = uniqueTags.slice(0, 3);
+                                                        const remaining = uniqueTags.length - 3;
+                                                        return (
+                                                            <>
+                                                                {displayTags.map((tag, i) => (
+                                                                    <span key={`${tag}-${i}`} className="text-xs text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">
+                                                                        {tag}
+                                                                    </span>
+                                                                ))}
+                                                                {remaining > 0 && <span className="text-xs text-zinc-600">+{remaining}</span>}
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </div>
                                             </td>
                                             <td className="p-4 text-right">

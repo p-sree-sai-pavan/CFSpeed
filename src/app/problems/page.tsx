@@ -101,13 +101,9 @@ function ProblemView() {
     const handleTimeout = () => {
         setIsSolving(false);
         setIsTimeout(true);
-        // TODO: Record timeout in DB
     };
 
     const handleResult = (result: 'solved' | 'wrong') => {
-        // TODO: Record result
-
-        // Stop the solving state immediately
         setIsSolving(false);
 
         if (mode === 'contest') {

@@ -12,31 +12,69 @@ export default function ProfilePage() {
     const [submissions, setSubmissions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Fetch rich CF data
+    // Fetch rich CF data with caching
     useEffect(() => {
-        if (session?.user?.cfHandle) {
-            setLoading(true);
-            const handle = session.user.cfHandle;
+        if (!session?.user?.cfHandle) return;
 
-            Promise.all([
-                fetch(`https://codeforces.com/api/user.info?handles=${handle}`).then(res => res.json()),
-                fetch(`https://codeforces.com/api/user.rating?handle=${handle}`).then(res => res.json()),
-                fetch(`https://codeforces.com/api/user.status?handle=${handle}`).then(res => res.json())
-            ]).then(([userData, ratingData, statusData]) => {
-                if (userData.status === 'OK' && userData.result.length > 0) {
-                    setCfUser(userData.result[0]);
+        const handle = session.user.cfHandle;
+        const cacheKey = `cf_${handle}`;
+        const cacheExpiry = 5 * 60 * 1000; // 5 minutes
+
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+            try {
+                const { data, timestamp } = JSON.parse(cached);
+                if (Date.now() - timestamp < cacheExpiry) {
+                    setCfUser(data.userData);
+                    setHistory(data.ratingData);
+                    setSubmissions(data.statusData);
+                    return;
                 }
-                if (ratingData.status === 'OK') {
-                    setHistory(ratingData.result);
-                }
-                if (statusData.status === 'OK') {
-                    setSubmissions(statusData.result);
-                }
-            })
-                .catch(err => console.error(err))
-                .finally(() => setLoading(false));
+            } catch (e) {
+                // Invalid cache, continue to fetch
+            }
         }
-    }, [session]);
+
+        setLoading(true);
+
+        Promise.allSettled([
+            fetch(`https://codeforces.com/api/user.info?handles=${handle}`).then(res => res.json()),
+            fetch(`https://codeforces.com/api/user.rating?handle=${handle}`).then(res => res.json()),
+            fetch(`https://codeforces.com/api/user.status?handle=${handle}`).then(res => res.json())
+        ]).then(([userResult, ratingResult, statusResult]) => {
+            const userData = userResult.status === 'fulfilled' ? userResult.value : null;
+            const ratingData = ratingResult.status === 'fulfilled' ? ratingResult.value : null;
+            const statusData = statusResult.status === 'fulfilled' ? statusResult.value : null;
+
+            if (userData?.status === 'OK' && userData.result.length > 0) {
+                setCfUser(userData.result[0]);
+            }
+            if (ratingData?.status === 'OK') {
+                setHistory(ratingData.result);
+            }
+            if (statusData?.status === 'OK') {
+                setSubmissions(statusData.result);
+            }
+
+            // Cache successful results
+            if (userData && ratingData && statusData) {
+                try {
+                    sessionStorage.setItem(cacheKey, JSON.stringify({
+                        data: {
+                            userData: userData.status === 'OK' ? userData.result[0] : null,
+                            ratingData: ratingData.status === 'OK' ? ratingData.result : [],
+                            statusData: statusData.status === 'OK' ? statusData.result : []
+                        },
+                        timestamp: Date.now()
+                    }));
+                } catch (e) {
+                    // Storage quota exceeded or disabled
+                }
+            }
+        })
+            .catch(err => console.error('Profile fetch error:', err))
+            .finally(() => setLoading(false));
+    }, [session?.user?.cfHandle]);
 
     const getRankColor = (rating: number) => {
         if (rating < 1200) return 'text-zinc-400'; // Newbie

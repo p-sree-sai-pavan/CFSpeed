@@ -17,3 +17,13 @@ export const LEVEL_MAPPING: Record<string, { tier: string, name: string }> = {
     'G': { tier: 'tier7', name: 'Master' },
     'H': { tier: 's_tier', name: 'God Tier' },
 };
+
+export const TIER_TO_LEVEL: Record<string, string> = Object.fromEntries(
+    Object.entries(LEVEL_MAPPING).map(([level, info]) => [info.tier, level])
+);
+
+export const STATUS_WEIGHT: Record<string, number> = {
+    'unsolved': 0,
+    'wrong': 1,
+    'solved': 2
+};

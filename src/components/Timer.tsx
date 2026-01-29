@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Clock } from 'lucide-react';
 
 interface TimerProps {
@@ -11,38 +11,42 @@ interface TimerProps {
 
 export default function Timer({ initialSeconds, onComplete, isActive }: TimerProps) {
     const [timeLeft, setTimeLeft] = useState(initialSeconds);
+    const onCompleteRef = useRef(onComplete);
+    const hasCompletedRef = useRef(false);
 
     useEffect(() => {
-        setTimeLeft(initialSeconds);
-    }, [initialSeconds]);
+        onCompleteRef.current = onComplete;
+    }, [onComplete]);
 
     useEffect(() => {
-        if (timeLeft === 0 && isActive) {
-            onComplete();
+        if (!isActive) {
+            setTimeLeft(initialSeconds);
+            hasCompletedRef.current = false;
         }
-    }, [timeLeft, isActive, onComplete]);
+    }, [initialSeconds, isActive]);
 
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        if (!isActive) return;
 
-        if (isActive) {
-            interval = setInterval(() => {
-                setTimeLeft((prev) => {
-                    if (prev <= 1) {
-                        clearInterval(interval);
-                        return 0;
+        const interval = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    if (!hasCompletedRef.current) {
+                        hasCompletedRef.current = true;
+                        onCompleteRef.current();
                     }
-                    return prev - 1;
-                });
-            }, 1000);
-        }
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
 
         return () => clearInterval(interval);
-    }, [isActive]); // Only depend on isActive, not timeLeft
+    }, [isActive]);
 
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
-    const progress = (timeLeft / initialSeconds) * 100;
+    const progress = initialSeconds > 0 ? (timeLeft / initialSeconds) * 100 : 0;
 
     return (
         <div className="flex flex-col items-center">

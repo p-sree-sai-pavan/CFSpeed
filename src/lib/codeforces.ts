@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { getProblemId } from './utils';
 
 // Get solved problems from DB cache (instant, <10ms)
 export async function getSolvedFromCache(userId: string): Promise<Set<string>> {
@@ -20,7 +21,7 @@ export async function fetchUserSolvedWithStatus(handle: string): Promise<{ solve
 
         if (data.status === 'OK') {
             for (const sub of data.result) {
-                const pid = `${sub.problem.contestId}${sub.problem.index}`;
+                const pid = getProblemId(sub.problem.contestId, sub.problem.index);
                 if (sub.verdict === 'OK') {
                     solved.add(pid);
                 } else {

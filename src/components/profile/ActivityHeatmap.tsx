@@ -12,6 +12,8 @@ interface ActivityHeatmapProps {
 export default function ActivityHeatmap({ submissions }: ActivityHeatmapProps) {
     const { weeks, maxCount } = useMemo(() => {
         if (!submissions || submissions.length === 0) return { weeks: [], maxCount: 0 };
+        
+        const submissionsLength = submissions.length;
 
         // 1. Group by Day
         const dailyCounts = new Map<string, number>();
@@ -57,7 +59,7 @@ export default function ActivityHeatmap({ submissions }: ActivityHeatmapProps) {
         // But for simplicity, we can just render a flex grid of weeks.
 
         return { weeks: weeksArr, maxCount: max };
-    }, [submissions]);
+    }, [submissions?.length, submissions?.[0]?.creationTimeSeconds, submissions?.[submissions.length - 1]?.creationTimeSeconds]);
 
     // Color Scale
     const getColor = (count: number) => {
