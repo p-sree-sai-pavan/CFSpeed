@@ -3,7 +3,7 @@ import { getRandomProblem } from '@/lib/problems';
 import { LEVEL_MAPPING } from '@/lib/constants';
 
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { getSolvedFromCache } from '@/lib/codeforces';
 import { prisma } from '@/lib/db';
 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/db";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export const dynamic = 'force-dynamic';
 
@@ -82,9 +82,9 @@ export async function POST(request: Request) {
             });
         }
 
-        return NextResponse.json({ 
-            success: true, 
-            recorded: { verdict, problemId: pid, status } 
+        return NextResponse.json({
+            success: true,
+            recorded: { verdict, problemId: pid, status }
         });
     } catch (error) {
         console.error('Extension Sync Error:', error);
