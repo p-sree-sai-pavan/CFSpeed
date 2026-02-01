@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { User, Menu } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { User, Menu, LogOut } from 'lucide-react';
 import { useState } from 'react';
 
 const LINKS = [
@@ -15,11 +15,16 @@ const LINKS = [
 
 export default function Navbar() {
     const pathname = usePathname();
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+    // Hide navbar for unauthenticated users on landing page
+    if (status !== 'loading' && !session && pathname === '/') {
+        return null;
+    }
+
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md">
+        <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/80 backdrop-blur-md">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2">
@@ -42,13 +47,13 @@ export default function Navbar() {
                     ))}
                 </div>
 
-                {/* Profile / Sign In */}
-                <div className="hidden md:flex items-center gap-4">
+                {/* Profile / Sign In + Logout */}
+                <div className="hidden md:flex items-center gap-3">
                     <Link
                         href="/profile"
                         className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${pathname === '/profile'
                             ? 'bg-white text-black'
-                            : 'bg-zinc-900 text-white hover:bg-zinc-800'
+                            : 'bg-neutral-900 text-white hover:bg-neutral-800'
                             }`}
                     >
                         {session?.user?.image ? (
@@ -58,6 +63,15 @@ export default function Navbar() {
                         )}
                         <span>{session ? 'Profile' : 'Sign In'}</span>
                     </Link>
+                    {session && (
+                        <button
+                            onClick={() => signOut({ callbackUrl: '/' })}
+                            className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-neutral-400 hover:text-white hover:bg-neutral-900 transition-colors"
+                            title="Sign out"
+                        >
+                            <LogOut className="h-4 w-4" />
+                        </button>
+                    )}
                 </div>
 
                 {/* Mobile Menu Toggle */}
@@ -71,7 +85,7 @@ export default function Navbar() {
 
             {/* Mobile Menu */}
             {isMenuOpen && (
-                <div className="md:hidden border-t border-white/5 bg-zinc-950 px-4 py-4">
+                <div className="md:hidden border-t border-white/5 bg-black px-4 py-4">
                     <div className="flex flex-col gap-4">
                         {LINKS.map((link) => (
                             <Link
@@ -90,6 +104,18 @@ export default function Navbar() {
                         >
                             {session ? 'My Profile' : 'Sign In'}
                         </Link>
+                        {session && (
+                            <button
+                                onClick={() => {
+                                    setIsMenuOpen(false);
+                                    signOut({ callbackUrl: '/' });
+                                }}
+                                className="flex items-center gap-2 text-sm font-medium text-red-400 hover:text-red-300"
+                            >
+                                <LogOut className="h-4 w-4" />
+                                Sign Out
+                            </button>
+                        )}
                     </div>
                 </div>
             )}

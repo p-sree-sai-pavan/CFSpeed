@@ -5,6 +5,7 @@ import { Providers } from "@/components/Providers";
 import Navbar from "@/components/Navbar";
 import NextTopLoader from 'nextjs-toploader';
 import PageTransition from "@/components/PageTransition";
+import MainWrapper from "@/components/MainWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,9 +46,9 @@ export default function RootLayout({
         <Providers>
           <Navbar />
           <PageTransition>
-            <main className="pt-16">
+            <MainWrapper>
               {children}
-            </main>
+            </MainWrapper>
           </PageTransition>
         </Providers>
       </body>

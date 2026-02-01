@@ -1,3 +1,6 @@
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import LevelCard from '@/components/LevelCard';
 import { STAGES, LEVEL_MAPPING } from '@/lib/constants';
 import levelsSummary from '../../../public/levels-summary.json';
@@ -22,6 +25,12 @@ interface PageProps {
 }
 
 export default async function LevelsPage({ searchParams }: PageProps) {
+    // Auth check - redirect to home if not logged in
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        redirect('/');
+    }
+
     // Read stage from URL query param, default to 'elite'
     const params = await searchParams;
     const selectedStage = params.stage || 'elite';
@@ -41,7 +50,7 @@ export default async function LevelsPage({ searchParams }: PageProps) {
 
 function renderPage(selectedStage: string, currentStageData: LevelsSummary[string], currentStageInfo: typeof STAGES[number]) {
     return (
-        <div className="min-h-screen bg-zinc-950 px-4 py-20 md:px-8 relative overflow-hidden">
+        <div className="min-h-screen bg-black px-4 py-20 md:px-8 relative overflow-hidden">
             {/* Background Blobs */}
             <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-purple-500/10 rounded-full blur-[120px] -z-10 translate-x-1/2 -translate-y-1/2" />
             <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-indigo-500/10 rounded-full blur-[120px] -z-10 -translate-x-1/2 translate-y-1/2" />

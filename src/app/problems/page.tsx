@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { ExternalLink, RefreshCw, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 import Timer from '@/components/Timer';
 import Link from 'next/link';
+import AuthGuard from '@/components/AuthGuard';
 
 function ProblemView() {
     const searchParams = useSearchParams();
@@ -127,7 +128,7 @@ function ProblemView() {
 
     if (loading) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white relative overflow-hidden">
+            <div className="flex min-h-screen items-center justify-center bg-black text-white relative overflow-hidden">
                 <div className="absolute inset-0 bg-indigo-500/5 blur-[100px]" />
                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent z-10" />
             </div>
@@ -136,7 +137,7 @@ function ProblemView() {
 
     if (!problem) {
         return (
-            <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 text-white gap-6 relative overflow-hidden">
+            <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white gap-6 relative overflow-hidden">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-500/10 rounded-full blur-[100px] -z-10" />
 
                 <p className="text-2xl font-bold">No problem found.</p>
@@ -153,16 +154,16 @@ function ProblemView() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 px-4 py-20 text-white relative overflow-hidden">
+        <div className="min-h-screen bg-black px-4 py-20 text-white relative overflow-hidden">
             {/* Background Gradients */}
             <div className="absolute top-0 center w-full h-[500px] bg-indigo-500/10 rounded-full blur-[120px] -z-10" />
 
             <div className="mx-auto max-w-4xl text-center relative z-10">
 
                 {/* Back Link */}
-                <div className="absolute top-0 left-0 hidden md:block">
-                    <Link href="/levels" className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors">
-                        <ArrowLeft className="h-4 w-4" /> Back
+                <div className="mb-6 md:mb-0 md:absolute md:top-0 md:left-0">
+                    <Link href="/levels" className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-sm">
+                        <ArrowLeft className="h-4 w-4" /> Back to Levels
                     </Link>
                 </div>
 
@@ -265,8 +266,10 @@ function ProblemView() {
 
 export default function ProblemsPage() {
     return (
-        <Suspense fallback={<div className="bg-zinc-950 py-20 text-center text-white">Loading...</div>}>
-            <ProblemView />
-        </Suspense>
+        <AuthGuard>
+            <Suspense fallback={<div className="bg-zinc-950 py-20 text-center text-white">Loading...</div>}>
+                <ProblemView />
+            </Suspense>
+        </AuthGuard>
     );
 }

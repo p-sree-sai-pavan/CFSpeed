@@ -1,12 +1,22 @@
 import Link from 'next/link';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import UpcomingContests from '@/components/UpcomingContests';
 import { getUpcomingContests } from '@/lib/cf';
+import LandingPage from '@/components/LandingPage';
 
 export default async function Home() {
+  const session = await getServerSession(authOptions);
   const contests = await getUpcomingContests();
 
+  // Show landing page for unauthenticated users
+  if (!session) {
+    return <LandingPage />;
+  }
+
+  // Authenticated users see the original homepage
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 px-4 text-center text-white py-20">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 text-center text-white py-20">
       <div className="relative mb-8">
         <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-75 blur-xl"></div>
         <h1 className="relative text-6xl font-black tracking-tighter md:text-8xl">
