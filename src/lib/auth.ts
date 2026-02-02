@@ -26,5 +26,5 @@ export const authOptions: AuthOptions = {
             return session;
         },
     },
-    debug: true, // Enable debug logs for Vercel
+    debug: process.env.NODE_ENV === 'development',
 };

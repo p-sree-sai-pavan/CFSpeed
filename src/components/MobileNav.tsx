@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Home, Layers, FileText, Trophy, User } from 'lucide-react';
 
 const TABS = [
@@ -14,10 +15,11 @@ const TABS = [
 
 export default function MobileNav() {
     const pathname = usePathname();
+    const { data: session, status } = useSession();
 
-    // Hide on landing page for unauthenticated users (handled by checking if on unauthenticated landing)
-    if (pathname === '/') {
-        return null; // Will be conditionally shown based on session in a wrapper if needed
+    // Only hide on landing page for unauthenticated users
+    if (pathname === '/' && status !== 'loading' && !session) {
+        return null;
     }
 
     return (

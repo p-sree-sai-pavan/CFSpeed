@@ -109,8 +109,8 @@ export default function ProblemsListPage() {
                         </div>
                     </div>
 
-                    {/* Desktop Table / Mobile Cards */}
-                    <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] overflow-hidden">
+                    {/* Desktop Table / Mobile Cards with loading state opacity */}
+                    <div className={`rounded-xl bg-[#0d0d0f] border border-white/[0.06] overflow-hidden transition-opacity duration-200 ${loading ? 'opacity-50' : 'opacity-100'}`} aria-busy={loading}>
                         {/* Desktop Table */}
                         <div className="hidden md:block overflow-x-auto">
                             <table className="w-full text-left">
@@ -148,7 +148,7 @@ export default function ProblemsListPage() {
                                                 <td className="px-4 py-3.5">
                                                     {problem.status === 'solved' && <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center"><Check className="h-3 w-3 text-emerald-500" /></div>}
                                                     {problem.status === 'wrong' && <div className="w-5 h-5 rounded-full bg-red-500/10 flex items-center justify-center"><X className="h-3 w-3 text-red-500" /></div>}
-                                                    {problem.status === 'unsolved' && <div className="w-5 h-5 rounded-full border border-zinc-800" />}
+                                                    {(problem.status === 'unsolved' || !problem.status) && <div className="w-5 h-5 rounded-full border border-zinc-800" />}
                                                 </td>
                                                 <td className="px-4 py-3.5"><span className="font-mono text-sm font-medium text-rose-400">{problem.rating || '—'}</span></td>
                                                 <td className="px-4 py-3.5">
@@ -192,7 +192,7 @@ export default function ProblemsListPage() {
                                     >
                                         {problem.status === 'solved' && <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0"><Check className="h-3 w-3 text-emerald-500" /></div>}
                                         {problem.status === 'wrong' && <div className="w-5 h-5 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0"><X className="h-3 w-3 text-red-500" /></div>}
-                                        {problem.status === 'unsolved' && <div className="w-5 h-5 rounded-full border border-zinc-800 flex-shrink-0" />}
+                                        {(problem.status === 'unsolved' || !problem.status) && <div className="w-5 h-5 rounded-full border border-zinc-800 flex-shrink-0" />}
 
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">

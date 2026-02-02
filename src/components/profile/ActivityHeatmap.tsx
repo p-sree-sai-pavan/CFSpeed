@@ -12,7 +12,7 @@ interface ActivityHeatmapProps {
 export default function ActivityHeatmap({ submissions }: ActivityHeatmapProps) {
     const { weeks, maxCount } = useMemo(() => {
         if (!submissions || submissions.length === 0) return { weeks: [], maxCount: 0 };
-        
+
         const submissionsLength = submissions.length;
 
         // 1. Group by Day
@@ -59,7 +59,7 @@ export default function ActivityHeatmap({ submissions }: ActivityHeatmapProps) {
         // But for simplicity, we can just render a flex grid of weeks.
 
         return { weeks: weeksArr, maxCount: max };
-    }, [submissions?.length, submissions?.[0]?.creationTimeSeconds, submissions?.[submissions.length - 1]?.creationTimeSeconds]);
+    }, [submissions]);
 
     // Color Scale
     const getColor = (count: number) => {
@@ -73,28 +73,39 @@ export default function ActivityHeatmap({ submissions }: ActivityHeatmapProps) {
     return (
         <div className="w-full bg-white/5 rounded-xl border border-white/10 p-4 mt-6">
             <h3 className="text-lg font-bold text-zinc-300 mb-4">Activity Year</h3>
-            <div className="flex gap-1 overflow-x-auto pb-2">
-                {weeks.map((week, wIndex) => (
-                    <div key={wIndex} className="flex flex-col gap-1">
-                        {week.map((day, dIndex) => (
-                            <div
-                                key={day.date}
-                                className={`w-3 h-3 rounded-sm ${getColor(day.count)}`}
-                                title={`${day.date}: ${day.count} submissions`}
-                            />
+
+            {/* M8: Empty state when no submissions */}
+            {weeks.length === 0 ? (
+                <div className="text-center py-8">
+                    <p className="text-zinc-500 text-sm">No submissions in the last year.</p>
+                    <p className="text-zinc-600 text-xs mt-1">Start solving problems to see your activity!</p>
+                </div>
+            ) : (
+                <>
+                    <div className="flex gap-1 overflow-x-auto pb-2">
+                        {weeks.map((week, wIndex) => (
+                            <div key={wIndex} className="flex flex-col gap-1">
+                                {week.map((day, dIndex) => (
+                                    <div
+                                        key={day.date}
+                                        className={`w-3 h-3 rounded-sm ${getColor(day.count)}`}
+                                        title={`${day.date}: ${day.count} submissions`}
+                                    />
+                                ))}
+                            </div>
                         ))}
                     </div>
-                ))}
-            </div>
-            <div className="flex justify-end items-center gap-2 mt-2 text-xs text-zinc-500">
-                <span>Less</span>
-                <div className="w-3 h-3 bg-zinc-800/50 rounded-sm" />
-                <div className="w-3 h-3 bg-green-900 rounded-sm" />
-                <div className="w-3 h-3 bg-green-700 rounded-sm" />
-                <div className="w-3 h-3 bg-green-500 rounded-sm" />
-                <div className="w-3 h-3 bg-green-400 rounded-sm" />
-                <span>More</span>
-            </div>
+                    <div className="flex justify-end items-center gap-2 mt-2 text-xs text-zinc-500">
+                        <span>Less</span>
+                        <div className="w-3 h-3 bg-zinc-800/50 rounded-sm" />
+                        <div className="w-3 h-3 bg-green-900 rounded-sm" />
+                        <div className="w-3 h-3 bg-green-700 rounded-sm" />
+                        <div className="w-3 h-3 bg-green-500 rounded-sm" />
+                        <div className="w-3 h-3 bg-green-400 rounded-sm" />
+                        <span>More</span>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

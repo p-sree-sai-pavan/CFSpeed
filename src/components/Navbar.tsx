@@ -25,8 +25,13 @@ export default function Navbar() {
     }, []);
 
     // Hide navbar for unauthenticated users on landing page
-    if (status !== 'loading' && !session && pathname === '/') {
-        return null;
+    // But during loading, show navbar skeleton on non-landing pages to prevent CLS
+    if (pathname === '/') {
+        // On landing page, hide during loading (will show landing hero)
+        // Only show navbar if session exists
+        if (status === 'loading' || !session) {
+            return null;
+        }
     }
 
     return (
@@ -100,6 +105,7 @@ export default function Navbar() {
                             onClick={() => signOut({ callbackUrl: '/' })}
                             className="p-2 rounded-lg text-zinc-500 hover:text-white hover:bg-white/[0.06] transition-all"
                             title="Sign out"
+                            aria-label="Sign out"
                         >
                             <LogOut className="h-4 w-4" />
                         </button>

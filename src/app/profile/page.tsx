@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { ExternalLink, TrendingUp, Clock, Target, User as UserIcon, Unlink } from 'lucide-react';
 import ActivityHeatmap from '@/components/profile/ActivityHeatmap';
 import AuthGuard from '@/components/AuthGuard';
+import ConfirmModal from '@/components/ConfirmModal';
+import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
     const { data: session } = useSession();
@@ -12,6 +14,25 @@ export default function ProfilePage() {
     const [history, setHistory] = useState<any[]>([]);
     const [submissions, setSubmissions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [showUnlinkModal, setShowUnlinkModal] = useState(false);
+
+    // H4: Safe sessionStorage wrapper for incognito/restricted environments
+    const safeStorage = {
+        getItem: (key: string): string | null => {
+            try {
+                return sessionStorage.getItem(key);
+            } catch {
+                return null;
+            }
+        },
+        setItem: (key: string, value: string): void => {
+            try {
+                sessionStorage.setItem(key, value);
+            } catch {
+                // Silently fail in incognito or quota exceeded
+            }
+        }
+    };
 
     useEffect(() => {
         if (!session?.user?.cfHandle) return;
@@ -20,7 +41,8 @@ export default function ProfilePage() {
         const cacheKey = `cf_${handle}`;
         const cacheExpiry = 5 * 60 * 1000;
 
-        const cached = sessionStorage.getItem(cacheKey);
+        // H4: Use safe storage wrapper
+        const cached = safeStorage.getItem(cacheKey);
         if (cached) {
             try {
                 const { data, timestamp } = JSON.parse(cached);
@@ -30,32 +52,37 @@ export default function ProfilePage() {
                     setSubmissions(data.statusData);
                     return;
                 }
-            } catch (e) { }
+            } catch { }
         }
 
         setLoading(true);
 
-        // 5 second timeout for all API calls
+        // H8: Proper abort controller with cleanup
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        let isMounted = true;
 
-        Promise.allSettled([
-            fetch(`https://codeforces.com/api/user.info?handles=${handle}`, { signal: controller.signal }).then(res => res.json()),
-            fetch(`https://codeforces.com/api/user.rating?handle=${handle}`, { signal: controller.signal }).then(res => res.json()),
-            fetch(`https://codeforces.com/api/user.status?handle=${handle}`, { signal: controller.signal }).then(res => res.json())
-        ]).then(([userResult, ratingResult, statusResult]) => {
-            clearTimeout(timeoutId);
-            const userData = userResult.status === 'fulfilled' ? userResult.value : null;
-            const ratingData = ratingResult.status === 'fulfilled' ? ratingResult.value : null;
-            const statusData = statusResult.status === 'fulfilled' ? statusResult.value : null;
+        const fetchData = async () => {
+            try {
+                // H3: Limit submissions to 500 to prevent freezing
+                const [userResult, ratingResult, statusResult] = await Promise.allSettled([
+                    fetch(`https://codeforces.com/api/user.info?handles=${handle}`, { signal: controller.signal }).then(res => res.json()),
+                    fetch(`https://codeforces.com/api/user.rating?handle=${handle}`, { signal: controller.signal }).then(res => res.json()),
+                    fetch(`https://codeforces.com/api/user.status?handle=${handle}&count=500`, { signal: controller.signal }).then(res => res.json())
+                ]);
 
-            if (userData?.status === 'OK' && userData.result.length > 0) setCfUser(userData.result[0]);
-            if (ratingData?.status === 'OK') setHistory(ratingData.result);
-            if (statusData?.status === 'OK') setSubmissions(statusData.result);
+                // Only update state if component is still mounted
+                if (!isMounted) return;
 
-            if (userData && ratingData && statusData) {
-                try {
-                    sessionStorage.setItem(cacheKey, JSON.stringify({
+                const userData = userResult.status === 'fulfilled' ? userResult.value : null;
+                const ratingData = ratingResult.status === 'fulfilled' ? ratingResult.value : null;
+                const statusData = statusResult.status === 'fulfilled' ? statusResult.value : null;
+
+                if (userData?.status === 'OK' && userData.result.length > 0) setCfUser(userData.result[0]);
+                if (ratingData?.status === 'OK') setHistory(ratingData.result);
+                if (statusData?.status === 'OK') setSubmissions(statusData.result);
+
+                if (userData && ratingData && statusData) {
+                    safeStorage.setItem(cacheKey, JSON.stringify({
                         data: {
                             userData: userData.status === 'OK' ? userData.result[0] : null,
                             ratingData: ratingData.status === 'OK' ? ratingData.result : [],
@@ -63,11 +90,24 @@ export default function ProfilePage() {
                         },
                         timestamp: Date.now()
                     }));
-                } catch (e) { }
+                }
+            } catch (err) {
+                if (isMounted && !(err instanceof Error && err.name === 'AbortError')) {
+                    console.error('Profile fetch error:', err);
+                }
+            } finally {
+                if (isMounted) setLoading(false);
             }
-        })
-            .catch(err => console.error('Profile fetch error:', err))
-            .finally(() => setLoading(false));
+        };
+
+        // Set timeout for abort (10 seconds)
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        fetchData().finally(() => clearTimeout(timeoutId));
+
+        return () => {
+            isMounted = false;
+            controller.abort();
+        };
     }, [session?.user?.cfHandle]);
 
     const getRankColor = (rating: number) => {
@@ -158,19 +198,36 @@ export default function ProfilePage() {
                                             Since {new Date(cfUser.registrationTimeSeconds * 1000).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                                         </span>
                                         <button
-                                            onClick={async () => {
-                                                if (!confirm('Unlink your Codeforces account?')) return;
-                                                try {
-                                                    const res = await fetch('/api/cf/unlink', { method: 'DELETE' });
-                                                    if (res.ok) window.location.reload();
-                                                    else alert('Failed to unlink');
-                                                } catch { alert('Failed to unlink'); }
-                                            }}
+                                            onClick={() => setShowUnlinkModal(true)}
                                             className="inline-flex items-center gap-1 text-[10px] md:text-xs text-zinc-600 hover:text-red-400 transition-colors p-3 -m-3 touch-target flex justify-center"
                                         >
                                             <Unlink className="h-3 w-3" />
                                             Unlink
                                         </button>
+
+                                        <ConfirmModal
+                                            isOpen={showUnlinkModal}
+                                            title="Unlink Account"
+                                            message="Are you sure you want to unlink your Codeforces account? Your synced data will be removed."
+                                            confirmText="Unlink"
+                                            variant="danger"
+                                            onCancel={() => setShowUnlinkModal(false)}
+                                            onConfirm={async () => {
+                                                try {
+                                                    const res = await fetch('/api/cf/unlink', { method: 'DELETE' });
+                                                    if (res.ok) {
+                                                        setShowUnlinkModal(false);
+                                                        window.location.reload();
+                                                    } else {
+                                                        toast.error('Failed to unlink account');
+                                                        setShowUnlinkModal(false);
+                                                    }
+                                                } catch {
+                                                    toast.error('Failed to unlink account');
+                                                    setShowUnlinkModal(false);
+                                                }
+                                            }}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -195,13 +252,15 @@ export default function ProfilePage() {
                                                 body: JSON.stringify({ handle }),
                                             });
                                             if (res.ok) window.location.reload();
-                                            else { const data = await res.json(); alert('Error: ' + data.error); }
-                                        } catch { alert('Failed to link'); }
+                                            else { const data = await res.json(); toast.error('Error: ' + data.error); }
+                                        } catch { toast.error('Failed to link account'); }
                                         finally { setLoading(false); }
                                     }}
                                     className="flex gap-2 justify-center"
                                 >
+                                    <label htmlFor="cf-handle" className="sr-only">Codeforces Handle</label>
                                     <input
+                                        id="cf-handle"
                                         type="text"
                                         name="handle"
                                         placeholder="CF Handle"

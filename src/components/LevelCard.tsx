@@ -55,7 +55,7 @@ export default function LevelCard({
                         <span>{timeRange}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-zinc-500">
-                        <span>{count.toLocaleString()} probs</span>
+                        <span>{count.toLocaleString()} problems</span>
                     </div>
                 </div>
             </div>

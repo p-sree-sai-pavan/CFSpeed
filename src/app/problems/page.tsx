@@ -6,6 +6,7 @@ import { ExternalLink, RefreshCw, CheckCircle, XCircle, ArrowLeft } from 'lucide
 import Timer from '@/components/Timer';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
+import toast from 'react-hot-toast';
 
 function ProblemView() {
     const searchParams = useSearchParams();
@@ -20,31 +21,66 @@ function ProblemView() {
     const [isSolving, setIsSolving] = useState(false);
     const [isTimeout, setIsTimeout] = useState(false);
 
+    // Error state with type differentiation
+    const [error, setError] = useState<{ type: 'network' | 'server' | 'not_found' | null; message: string }>({ type: null, message: '' });
+    const [retryCount, setRetryCount] = useState(0);
+    const [lastRetryTime, setLastRetryTime] = useState(0);
+    const RETRY_COOLDOWN = 2000; // 2 second cooldown between retries
+
     // Sync Token State
     const [syncToken, setSyncToken] = useState<string>('');
 
-    // Fetch next problem
+    // Fetch next problem with proper error handling and abort cleanup
     const fetchNextProblem = async (targetLevel?: string) => {
+        // Rate limit retries
+        const now = Date.now();
+        if (now - lastRetryTime < RETRY_COOLDOWN && retryCount > 0) {
+            return; // Prevent spam clicks
+        }
+        setLastRetryTime(now);
+
         setLoading(true);
         setIsSolving(false);
         setIsTimeout(false);
-        // Generate new token for this problem attempt
-        setSyncToken(Math.random().toString(36).substring(2, 15));
+        setError({ type: null, message: '' });
+        setSyncToken(crypto.randomUUID());
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
         try {
             const currentLevel = targetLevel || level;
-            const res = await fetch(`/api/problems/next?stage=${stage}&level=${currentLevel}`);
-            const data = await res.json();
+            const res = await fetch(`/api/problems/next?stage=${stage}&level=${currentLevel}`, {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
 
-            // Check if API returned an error
-            if (data.error || !res.ok) {
-                console.error('API Error:', data.error);
+            if (!res.ok) {
+                if (res.status === 404) {
+                    setError({ type: 'not_found', message: 'No problems found for this level. Try a different stage or level.' });
+                } else if (res.status >= 500) {
+                    setError({ type: 'server', message: 'Server error. Please try again in a moment.' });
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    setError({ type: 'server', message: data.error || 'Failed to load problem.' });
+                }
                 setProblem(null);
-            } else {
-                setProblem(data);
+                setRetryCount(prev => prev + 1);
+                return;
             }
-        } catch (error) {
-            console.error('Error:', error);
+
+            const data = await res.json();
+            setProblem(data);
+            setRetryCount(0); // Reset on success
+        } catch (err) {
+            clearTimeout(timeoutId);
+            if (err instanceof Error && err.name === 'AbortError') {
+                setError({ type: 'network', message: 'Request timed out. Check your connection and try again.' });
+            } else {
+                setError({ type: 'network', message: 'Network error. Please check your connection.' });
+            }
             setProblem(null);
+            setRetryCount(prev => prev + 1);
         } finally {
             setLoading(false);
         }
@@ -118,7 +154,7 @@ function ProblemView() {
                 router.push(`/problems?stage=${stage}&level=${nextLevel}&mode=contest`);
             } else {
                 // Contest Finished
-                alert("Contest Complete! Great job.");
+                toast.success('Contest Complete! Great job.');
                 router.push('/contest');
             }
         } else {
@@ -131,6 +167,45 @@ function ProblemView() {
             <div className="flex min-h-screen items-center justify-center bg-black text-white relative overflow-hidden">
                 <div className="absolute inset-0 bg-indigo-500/5 blur-[100px]" />
                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent z-10" />
+            </div>
+        );
+    }
+
+    // Error state with retry
+    if (error.type) {
+        return (
+            <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white gap-6 relative overflow-hidden px-4">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-500/10 rounded-full blur-[100px] -z-10" />
+
+                <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-2">
+                    <XCircle className="h-8 w-8 text-red-400" />
+                </div>
+
+                <p className="text-xl font-bold text-center">
+                    {error.type === 'network' ? 'Connection Error' :
+                        error.type === 'not_found' ? 'No Problems Found' : 'Something Went Wrong'}
+                </p>
+                <p className="text-zinc-400 text-center max-w-md">{error.message}</p>
+
+                <div className="flex gap-3 mt-2">
+                    <button
+                        onClick={() => fetchNextProblem()}
+                        disabled={Date.now() - lastRetryTime < RETRY_COOLDOWN}
+                        className="flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 font-bold transition-all"
+                    >
+                        <RefreshCw className="h-5 w-5" /> Try Again
+                    </button>
+                    <button
+                        onClick={() => router.push(`/levels?stage=${stage}`)}
+                        className="flex items-center gap-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 px-6 py-3 font-bold transition-all"
+                    >
+                        <ArrowLeft className="h-5 w-5" /> Back to Levels
+                    </button>
+                </div>
+
+                {retryCount >= 3 && (
+                    <p className="text-xs text-zinc-600 mt-4">Tried {retryCount} times. The server might be experiencing issues.</p>
+                )}
             </div>
         );
     }
@@ -162,7 +237,7 @@ function ProblemView() {
 
                 {/* Back Link */}
                 <div className="mb-6 md:mb-0 md:absolute md:top-0 md:left-0">
-                    <Link href="/levels" className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-sm">
+                    <Link href={`/levels?stage=${stage}`} className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-sm">
                         <ArrowLeft className="h-4 w-4" /> Back to Levels
                     </Link>
                 </div>
@@ -242,7 +317,7 @@ function ProblemView() {
                     )}
 
                     {/* Dev Tools (for testing without extension) */}
-                    {isSolving && (
+                    {process.env.NODE_ENV === 'development' && isSolving && (
                         <div className="mt-12 flex gap-4 opacity-30 hover:opacity-100 transition-opacity">
                             <button
                                 onClick={() => handleResult('solved')}

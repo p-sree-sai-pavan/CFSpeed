@@ -7,6 +7,8 @@ import MobileNav from "@/components/MobileNav";
 import NextTopLoader from 'nextjs-toploader';
 import PageTransition from "@/components/PageTransition";
 import MainWrapper from "@/components/MainWrapper";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import ToastProvider from "@/components/ToastProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,12 +55,15 @@ export default function RootLayout({
         />
         <Providers>
           <Navbar />
-          <PageTransition>
-            <MainWrapper>
-              {children}
-            </MainWrapper>
-          </PageTransition>
+          <ErrorBoundary>
+            <PageTransition>
+              <MainWrapper>
+                {children}
+              </MainWrapper>
+            </PageTransition>
+          </ErrorBoundary>
           <MobileNav />
+          <ToastProvider />
         </Providers>
       </body>
     </html>

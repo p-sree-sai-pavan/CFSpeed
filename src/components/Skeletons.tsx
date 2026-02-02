@@ -2,15 +2,16 @@
 
 export function ContestsSkeleton() {
     return (
-        <div className="space-y-3">
+        <div className="space-y-3" role="status" aria-label="Loading contests">
             <div className="flex items-center gap-3 mb-4">
-                <div className="w-2 h-2 rounded-full bg-zinc-700 animate-pulse" />
-                <div className="h-4 w-32 bg-zinc-800 rounded animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-zinc-700 animate-pulse" aria-hidden="true" />
+                <div className="h-4 w-32 bg-zinc-800 rounded animate-pulse" aria-hidden="true" />
             </div>
             {[1, 2, 3].map((i) => (
                 <div
                     key={i}
                     className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04] animate-pulse"
+                    aria-hidden="true"
                 >
                     <div className="flex items-center justify-between">
                         <div className="space-y-2">
@@ -21,6 +22,7 @@ export function ContestsSkeleton() {
                     </div>
                 </div>
             ))}
+            <span className="sr-only">Loading...</span>
         </div>
     );
 }

@@ -27,21 +27,23 @@ export default function Timer({ initialSeconds, onComplete, isActive }: TimerPro
     useEffect(() => {
         if (!isActive) return;
 
+        const startTime = Date.now();
+        const targetEndTime = startTime + (initialSeconds * 1000);
+
         const interval = setInterval(() => {
-            setTimeLeft((prev) => {
-                if (prev <= 1) {
-                    if (!hasCompletedRef.current) {
-                        hasCompletedRef.current = true;
-                        onCompleteRef.current();
-                    }
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
+            const now = Date.now();
+            const remaining = Math.max(0, Math.ceil((targetEndTime - now) / 1000));
+            setTimeLeft(remaining);
+
+            if (remaining <= 0 && !hasCompletedRef.current) {
+                hasCompletedRef.current = true;
+                clearInterval(interval);
+                onCompleteRef.current();
+            }
+        }, 100); // Check every 100ms for accuracy
 
         return () => clearInterval(interval);
-    }, [isActive]);
+    }, [isActive, initialSeconds]);
 
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;

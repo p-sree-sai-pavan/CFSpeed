@@ -73,8 +73,8 @@ export default function ContestPage() {
                                     key={stage.id}
                                     onClick={() => setSelectedStage(stage.id)}
                                     className={`group relative p-4 rounded-xl text-left transition-all duration-200 ${selectedStage === stage.id
-                                            ? 'bg-rose-500/10 border-2 border-rose-500/50 shadow-lg shadow-rose-500/10'
-                                            : 'bg-[#0d0d0f] border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.02]'
+                                        ? 'bg-rose-500/10 border-2 border-rose-500/50 shadow-lg shadow-rose-500/10'
+                                        : 'bg-[#0d0d0f] border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.02]'
                                         }`}
                                 >
                                     {/* Selection indicator */}
@@ -116,7 +116,7 @@ export default function ContestPage() {
 
                     {/* Start Button */}
                     <Link
-                        href={`/problems?stage=${selectedStage}&level=random&contest=true`}
+                        href={`/problems?stage=${selectedStage}&level=A&mode=contest`}
                         className="group relative w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white text-base md:text-lg font-semibold transition-all active:scale-[0.98] shadow-lg shadow-rose-500/20"
                     >
                         <span>Start Contest</span>

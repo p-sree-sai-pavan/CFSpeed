@@ -16,7 +16,14 @@ export async function fetchUserSolvedWithStatus(handle: string): Promise<{ solve
     const attempted = new Set<string>();
 
     try {
-        const res = await fetch(`https://codeforces.com/api/user.status?handle=${handle}&count=1000`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const res = await fetch(`https://codeforces.com/api/user.status?handle=${handle}&count=1000`, {
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
         const data = await res.json();
 
         if (data.status === 'OK') {

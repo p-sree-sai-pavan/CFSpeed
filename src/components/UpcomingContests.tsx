@@ -14,30 +14,49 @@ interface Contest {
 export default function UpcomingContests() {
     const [contests, setContests] = useState<Contest[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+
+    const fetchContests = async () => {
+        setLoading(true);
+        setError(false);
+        try {
+            const res = await fetch('/api/contests', {
+                next: { revalidate: 300 }
+            } as RequestInit);
+            if (res.ok) {
+                const data = await res.json();
+                setContests(data);
+            } else {
+                setError(true);
+            }
+        } catch (err) {
+            console.error('Failed to fetch contests:', err);
+            setError(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchContests = async () => {
-            try {
-                const res = await fetch('/api/contests', {
-                    next: { revalidate: 300 }
-                } as RequestInit);
-                if (res.ok) {
-                    const data = await res.json();
-                    setContests(data);
-                }
-            } catch (error) {
-                console.error('Failed to fetch contests:', error);
-                // Graceful degradation - just show nothing
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchContests();
     }, []);
 
     if (loading) {
         return <ContestsSkeleton />;
+    }
+
+    if (error) {
+        return (
+            <div className="w-full p-4 rounded-xl bg-[#0d0d0f] border border-white/[0.06] text-center">
+                <p className="text-zinc-500 text-xs mb-2">Failed to load contests</p>
+                <button
+                    onClick={fetchContests}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                >
+                    Try again
+                </button>
+            </div>
+        );
     }
 
     if (contests.length === 0) return null;
