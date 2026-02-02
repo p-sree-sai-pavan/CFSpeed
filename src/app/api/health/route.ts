@@ -4,11 +4,16 @@ import { prisma } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+    const start = Date.now();
     try {
-        // Try to connect to DB
+        // Actually test DB connection with a simple query
+        await prisma.$queryRaw`SELECT 1`;
+        const dbLatency = Date.now() - start;
+
         return NextResponse.json({
             status: 'ok',
             db: 'connected',
+            dbLatencyMs: dbLatency,
             timestamp: new Date().toISOString()
         }, { status: 200 });
     } catch (error: any) {
@@ -21,3 +26,4 @@ export async function GET() {
         }, { status: 500 });
     }
 }
+
