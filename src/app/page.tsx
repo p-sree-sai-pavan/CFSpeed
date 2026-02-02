@@ -65,15 +65,15 @@ export default async function Home() {
           <Link href="/levels" className="group">
             <div className="p-4 md:p-6 rounded-xl bg-[#0d0d0f] border border-white/[0.06] hover:border-white/[0.1] transition-all active:scale-[0.99]">
               <div className="flex items-center gap-3 mb-3 md:mb-4">
-                <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                  <Zap className="h-4 w-4 md:h-5 md:w-5 text-indigo-400" />
+                <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                  <Zap className="h-4 w-4 md:h-5 md:w-5 text-rose-400" />
                 </div>
                 <h3 className="text-base md:text-lg font-semibold text-white">Speed Training</h3>
               </div>
               <p className="text-zinc-500 text-xs md:text-sm mb-3 md:mb-4">
                 Practice with adaptive time limits based on real contest data.
               </p>
-              <div className="flex items-center gap-2 text-xs md:text-sm text-indigo-400 font-medium group-hover:gap-3 transition-all">
+              <div className="flex items-center gap-2 text-xs md:text-sm text-rose-400 font-medium group-hover:gap-3 transition-all">
                 Browse Levels <ArrowRight className="h-4 w-4" />
               </div>
             </div>

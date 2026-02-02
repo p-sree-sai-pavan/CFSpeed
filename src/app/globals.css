@@ -16,19 +16,32 @@
 
 /* =========================================
    CFSpeed Design System
+   Colors inspired by the logo (maroon/burgundy)
    ========================================= */
 
 :root {
+  /* Core Colors */
   --cf-black: #09090b;
   --cf-surface: #0d0d0f;
   --cf-surface-elevated: #131316;
   --cf-border: rgba(255, 255, 255, 0.06);
   --cf-border-strong: rgba(255, 255, 255, 0.1);
+
+  /* Text */
   --cf-text-primary: #fafafa;
   --cf-text-secondary: #a1a1aa;
   --cf-text-muted: #52525b;
-  --cf-accent: #6366f1;
+
+  /* Brand Accent - Rose/Maroon (inspired by logo) */
+  --cf-accent: #f43f5e;
+  --cf-accent-hover: #fb7185;
+  --cf-accent-subtle: rgba(244, 63, 94, 0.1);
+
+  /* Secondary Accent - Keep orange for urgency/contest */
   --cf-urgency: #f97316;
+  --cf-urgency-subtle: rgba(249, 115, 22, 0.1);
+
+  /* Success */
   --cf-success: #22c55e;
 }
 

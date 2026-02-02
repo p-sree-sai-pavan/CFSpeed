@@ -32,16 +32,21 @@ export default function Navbar() {
     return (
         <nav
             className={`fixed top-0 left-0 right-0 z-50 hidden md:block transition-all duration-200 ${scrolled
-                    ? 'bg-[#09090b]/90 backdrop-blur-xl border-b border-white/[0.06]'
-                    : 'bg-transparent border-b border-transparent'
+                ? 'bg-[#09090b]/90 backdrop-blur-xl border-b border-white/[0.06]'
+                : 'bg-transparent border-b border-transparent'
                 }`}
         >
             <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 lg:px-6">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-1.5 group">
+                <Link href="/" className="flex items-center gap-2 group">
+                    <img
+                        src="/logo.svg"
+                        alt="CFSpeed"
+                        className="h-8 w-8 rounded-lg"
+                    />
                     <span className="text-lg font-semibold tracking-tight">
                         <span className="text-white">CF</span>
-                        <span className="text-indigo-400 group-hover:text-indigo-300 transition-colors">Speed</span>
+                        <span className="text-rose-500 group-hover:text-rose-400 transition-colors">Speed</span>
                     </span>
                 </Link>
 
@@ -56,8 +61,8 @@ export default function Navbar() {
                                 key={link.href}
                                 href={link.href}
                                 className={`relative px-3 py-1.5 text-[13px] font-medium rounded-md transition-all ${isActive
-                                        ? 'text-white'
-                                        : 'text-zinc-500 hover:text-zinc-300'
+                                    ? 'text-white'
+                                    : 'text-zinc-500 hover:text-zinc-300'
                                     }`}
                             >
                                 {link.label}
@@ -74,8 +79,8 @@ export default function Navbar() {
                     <Link
                         href="/profile"
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all ${pathname === '/profile'
-                                ? 'bg-white text-black'
-                                : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+                            ? 'bg-rose-500 text-white'
+                            : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
                             }`}
                     >
                         {session?.user?.image ? (

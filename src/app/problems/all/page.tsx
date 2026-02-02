@@ -150,7 +150,7 @@ export default function ProblemsListPage() {
                                                     {problem.status === 'wrong' && <div className="w-5 h-5 rounded-full bg-red-500/10 flex items-center justify-center"><X className="h-3 w-3 text-red-500" /></div>}
                                                     {problem.status === 'unsolved' && <div className="w-5 h-5 rounded-full border border-zinc-800" />}
                                                 </td>
-                                                <td className="px-4 py-3.5"><span className="font-mono text-sm font-medium text-indigo-400">{problem.rating || '—'}</span></td>
+                                                <td className="px-4 py-3.5"><span className="font-mono text-sm font-medium text-rose-400">{problem.rating || '—'}</span></td>
                                                 <td className="px-4 py-3.5">
                                                     <div className="font-medium text-white text-sm">{problem.name}</div>
                                                     <div className="text-zinc-600 text-xs">{problem.contest_id}{problem.index}</div>

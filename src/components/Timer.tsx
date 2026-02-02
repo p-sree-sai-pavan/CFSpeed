@@ -59,7 +59,7 @@ export default function Timer({ initialSeconds, onComplete, isActive }: TimerPro
             {/* Timer Ring - Responsive */}
             <div className="relative mb-4 md:mb-6 flex h-40 w-40 md:h-52 md:w-52 items-center justify-center">
                 {/* Glow effect - reduced on mobile */}
-                <div className={`absolute inset-0 rounded-full blur-xl md:blur-2xl transition-all duration-500 ${isCritical ? 'bg-red-500/20' : isUrgent ? 'bg-orange-500/15' : 'bg-indigo-500/10'
+                <div className={`absolute inset-0 rounded-full blur-xl md:blur-2xl transition-all duration-500 ${isCritical ? 'bg-red-500/20' : isUrgent ? 'bg-orange-500/15' : 'bg-rose-500/10'
                     }`} />
 
                 {/* Background ring */}
@@ -70,7 +70,7 @@ export default function Timer({ initialSeconds, onComplete, isActive }: TimerPro
                     <circle cx="80" cy="80" r={radius.mobile} fill="none" className="stroke-white/[0.04]" strokeWidth={strokeWidth} />
                     <circle
                         cx="80" cy="80" r={radius.mobile} fill="none"
-                        className={`transition-all duration-1000 ease-linear ${isCritical ? 'stroke-red-500' : isUrgent ? 'stroke-orange-500' : 'stroke-indigo-500'
+                        className={`transition-all duration-1000 ease-linear ${isCritical ? 'stroke-red-500' : isUrgent ? 'stroke-orange-500' : 'stroke-rose-500'
                             }`}
                         strokeWidth={strokeWidth}
                         strokeDasharray={2 * Math.PI * radius.mobile}
@@ -84,7 +84,7 @@ export default function Timer({ initialSeconds, onComplete, isActive }: TimerPro
                     <circle cx="104" cy="104" r={radius.desktop} fill="none" className="stroke-white/[0.04]" strokeWidth={strokeWidth + 2} />
                     <circle
                         cx="104" cy="104" r={radius.desktop} fill="none"
-                        className={`transition-all duration-1000 ease-linear ${isCritical ? 'stroke-red-500' : isUrgent ? 'stroke-orange-500' : 'stroke-indigo-500'
+                        className={`transition-all duration-1000 ease-linear ${isCritical ? 'stroke-red-500' : isUrgent ? 'stroke-orange-500' : 'stroke-rose-500'
                             }`}
                         strokeWidth={strokeWidth + 2}
                         strokeDasharray={2 * Math.PI * radius.desktop}

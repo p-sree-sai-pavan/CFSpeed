@@ -231,7 +231,7 @@ export default function ProfilePage() {
 
                         <div className="grid grid-cols-3 gap-2 md:gap-4">
                             <div className="p-3 md:p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] text-center">
-                                <Clock className="h-4 w-4 md:h-5 md:w-5 text-indigo-400 mx-auto mb-2" />
+                                <Clock className="h-4 w-4 md:h-5 md:w-5 text-rose-400 mx-auto mb-2" />
                                 <div className="text-lg md:text-2xl font-semibold font-mono text-white">0h</div>
                                 <div className="text-[10px] md:text-xs text-zinc-600">Time</div>
                             </div>

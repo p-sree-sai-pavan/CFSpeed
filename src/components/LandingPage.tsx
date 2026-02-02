@@ -14,7 +14,7 @@ export default function LandingPage() {
             {/* Hero Section */}
             <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20">
                 {/* Ambient glow - very subtle */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-violet-600/8 via-transparent to-transparent blur-3xl pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-rose-600/8 via-transparent to-transparent blur-3xl pointer-events-none" />
                 <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
 
                 <div className="relative z-10 max-w-5xl mx-auto text-center">
@@ -32,7 +32,7 @@ export default function LandingPage() {
                             <span className="text-white">Build competitive</span>
                             <br />
                             <span className="text-white">programming </span>
-                            <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">speed</span>
+                            <span className="bg-gradient-to-r from-rose-400 via-red-400 to-rose-500 bg-clip-text text-transparent">speed</span>
                         </h1>
                     </ScrollFade>
 
@@ -65,7 +65,7 @@ export default function LandingPage() {
                 <ScrollScale delay={200}>
                     <div className="relative mt-20 w-full max-w-6xl mx-auto px-4">
                         {/* Glow effect behind */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-violet-600/20 via-purple-600/10 to-transparent blur-3xl scale-90 -translate-y-10" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-rose-600/20 via-rose-600/10 to-transparent blur-3xl scale-90 -translate-y-10" />
 
                         {/* Main mockup container with perspective */}
                         <div className="relative" style={{ perspective: '2000px' }}>
@@ -160,12 +160,12 @@ export default function LandingPage() {
             {/* Features Section */}
             <section id="features" className="relative py-32 px-6">
                 {/* Subtle background */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-950/5 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-rose-950/5 to-transparent" />
 
                 <div className="relative z-10 max-w-6xl mx-auto">
                     <ScrollFade>
                         <div className="text-center mb-20">
-                            <p className="text-violet-400 text-sm font-semibold tracking-wide uppercase mb-4">
+                            <p className="text-rose-400 text-sm font-semibold tracking-wide uppercase mb-4">
                                 Why CFSpeed
                             </p>
                             <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-6">
@@ -189,7 +189,7 @@ export default function LandingPage() {
                                 icon: Target,
                                 title: '8 Difficulty Levels',
                                 description: 'From Div2A warmups to Div1E challenges. Find your perfect training zone and level up systematically.',
-                                color: 'from-violet-500 to-purple-500'
+                                color: 'from-rose-500 to-red-500'
                             },
                             {
                                 icon: Trophy,
@@ -226,7 +226,7 @@ export default function LandingPage() {
 
             {/* How It Works Section */}
             <section className="relative py-32 px-6">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-[150px] pointer-events-none" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-rose-600/5 rounded-full blur-[150px] pointer-events-none" />
 
                 <div className="relative z-10 max-w-6xl mx-auto">
                     <ScrollFade>
@@ -247,7 +247,7 @@ export default function LandingPage() {
                         {/* Step 1 */}
                         <ScrollScale delay={0}>
                             <div className="relative group">
-                                <div className="absolute -inset-px bg-gradient-to-b from-violet-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                <div className="absolute -inset-px bg-gradient-to-b from-rose-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                 <div className="relative h-full p-8 rounded-2xl bg-[#0d0d0e] border border-white/5">
                                     <div className="text-6xl font-bold text-white/10 mb-6">01</div>
                                     <h3 className="text-xl font-semibold text-white mb-4">Choose Your Level</h3>
@@ -334,7 +334,7 @@ export default function LandingPage() {
                         {/* Large - Problems Library */}
                         <ScrollScale delay={0}>
                             <div className="md:col-span-2 relative group rounded-2xl overflow-hidden bg-[#0d0d0e] border border-white/5">
-                                <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-rose-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                 <img src="/problems.png" alt="Problem Library" className="w-full h-auto" />
                                 <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
                                     <h3 className="text-lg font-semibold text-white">Problem Library</h3>
@@ -384,8 +384,8 @@ export default function LandingPage() {
 
             {/* CTA Section */}
             <section className="relative py-32 px-6">
-                <div className="absolute inset-0 bg-gradient-to-t from-violet-950/10 via-transparent to-transparent" />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-violet-600/10 rounded-full blur-[150px] pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-rose-950/10 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-rose-600/10 rounded-full blur-[150px] pointer-events-none" />
 
                 <ScrollScale>
                     <div className="relative z-10 max-w-3xl mx-auto text-center">
