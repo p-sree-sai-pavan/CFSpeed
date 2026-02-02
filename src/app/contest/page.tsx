@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Timer, BookOpen, Trophy, ArrowRight } from 'lucide-react';
+import { Trophy, Clock, Target, ChevronRight } from 'lucide-react';
 import { STAGES } from '@/lib/constants';
 import AuthGuard from '@/components/AuthGuard';
 
@@ -11,89 +11,75 @@ export default function ContestPage() {
 
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-[#09090b] pt-20 pb-16 px-4 md:px-6">
+            <div className="min-h-screen bg-[#09090b] pt-4 md:pt-20 pb-24 md:pb-16 px-4">
                 <div className="mx-auto max-w-3xl">
                     {/* Header */}
-                    <div className="text-center mb-12">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 mb-6">
+                    <div className="text-center mb-8 md:mb-12">
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 mb-4 md:mb-6">
                             <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                            <span className="text-orange-400 text-xs font-semibold uppercase tracking-wide">Contest Mode</span>
+                            <span className="text-orange-400 text-[10px] md:text-xs font-semibold uppercase tracking-wide">Contest Mode</span>
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white mb-4">
+                        <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-white mb-3 md:mb-4">
                             Virtual Contest
                         </h1>
-                        <p className="text-zinc-500 text-lg max-w-lg mx-auto">
-                            5 problems. Timed. Back-to-back. Test your speed under real contest pressure.
+                        <p className="text-zinc-500 text-sm md:text-base max-w-md mx-auto">
+                            5 problems, timed, no breaks
                         </p>
                     </div>
 
                     {/* Info Cards */}
-                    <div className="grid md:grid-cols-3 gap-3 mb-12">
-                        {[
-                            {
-                                icon: Timer,
-                                title: "Time Pressure",
-                                desc: "Strict per-problem limits"
-                            },
-                            {
-                                icon: BookOpen,
-                                title: "5 Problems",
-                                desc: "Level A through E"
-                            },
-                            {
-                                icon: Trophy,
-                                title: "Performance",
-                                desc: "Get rated after"
-                            }
-                        ].map((f, i) => (
-                            <div
-                                key={i}
-                                className="p-5 rounded-xl bg-[#0d0d0f] border border-white/[0.06] text-center"
-                            >
-                                <f.icon className="h-6 w-6 text-orange-500 mx-auto mb-3" />
-                                <h3 className="text-sm font-semibold text-white mb-1">{f.title}</h3>
-                                <p className="text-xs text-zinc-500">{f.desc}</p>
-                            </div>
-                        ))}
+                    <div className="grid grid-cols-3 gap-2 md:gap-4 mb-8 md:mb-10">
+                        <div className="p-3 md:p-5 rounded-xl bg-[#0d0d0f] border border-white/[0.06] text-center">
+                            <Target className="h-5 w-5 md:h-6 md:w-6 text-orange-400 mx-auto mb-2" />
+                            <div className="text-lg md:text-2xl font-semibold text-white">5</div>
+                            <div className="text-[10px] md:text-xs text-zinc-600 uppercase tracking-wide">Problems</div>
+                        </div>
+                        <div className="p-3 md:p-5 rounded-xl bg-[#0d0d0f] border border-white/[0.06] text-center">
+                            <Clock className="h-5 w-5 md:h-6 md:w-6 text-orange-400 mx-auto mb-2" />
+                            <div className="text-lg md:text-2xl font-semibold text-white">Timed</div>
+                            <div className="text-[10px] md:text-xs text-zinc-600 uppercase tracking-wide">Per Problem</div>
+                        </div>
+                        <div className="p-3 md:p-5 rounded-xl bg-[#0d0d0f] border border-white/[0.06] text-center">
+                            <Trophy className="h-5 w-5 md:h-6 md:w-6 text-orange-400 mx-auto mb-2" />
+                            <div className="text-lg md:text-2xl font-semibold text-white">Rank</div>
+                            <div className="text-[10px] md:text-xs text-zinc-600 uppercase tracking-wide">Your Result</div>
+                        </div>
                     </div>
 
-                    {/* Start Card */}
-                    <div className="rounded-2xl bg-[#0d0d0f] border border-white/[0.06] p-8 md:p-10">
-                        <h2 className="text-lg font-semibold text-white mb-6 text-center">
-                            Select Difficulty
-                        </h2>
-
-                        {/* Stage Buttons */}
-                        <div className="flex flex-wrap justify-center gap-2 mb-10">
+                    {/* Stage Selection */}
+                    <div className="mb-8">
+                        <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3 md:mb-4">Select Difficulty</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                             {STAGES.map((stage) => (
                                 <button
                                     key={stage.id}
                                     onClick={() => setSelectedStage(stage.id)}
-                                    className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${selectedStage === stage.id
-                                            ? 'bg-white text-black shadow-lg shadow-white/10'
-                                            : 'bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08] border border-white/[0.06]'
+                                    className={`p-3 md:p-4 rounded-xl text-left transition-all ${selectedStage === stage.id
+                                            ? 'bg-orange-500/10 border-2 border-orange-500/50'
+                                            : 'bg-[#0d0d0f] border border-white/[0.06] hover:border-white/[0.1]'
                                         }`}
                                 >
-                                    {stage.name}
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${stage.color}`} />
+                                        <span className={`text-sm font-medium ${selectedStage === stage.id ? 'text-orange-400' : 'text-white'}`}>
+                                            {stage.name}
+                                        </span>
+                                    </div>
+                                    <span className="text-[10px] md:text-xs text-zinc-600">Top {stage.percentile.replace('p', '')}%</span>
                                 </button>
                             ))}
                         </div>
-
-                        {/* Start Button */}
-                        <div className="text-center">
-                            <Link
-                                href={`/problems?stage=${selectedStage}&level=A&mode=contest`}
-                                className="inline-flex items-center gap-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white text-base font-semibold px-10 py-4 rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-orange-500/20"
-                            >
-                                Start Contest
-                                <ArrowRight className="h-5 w-5" />
-                            </Link>
-                            <p className="mt-4 text-xs text-zinc-600">
-                                Timer starts immediately on first problem
-                            </p>
-                        </div>
                     </div>
+
+                    {/* Start Button */}
+                    <Link
+                        href={`/problems?stage=${selectedStage}&level=random&contest=true`}
+                        className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-orange-500 hover:bg-orange-400 text-white text-base md:text-lg font-semibold transition-all active:scale-[0.98]"
+                    >
+                        Start Contest
+                        <ChevronRight className="h-5 w-5" />
+                    </Link>
                 </div>
             </div>
         </AuthGuard>

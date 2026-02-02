@@ -44,15 +44,9 @@ export default function ProfilePage() {
             const ratingData = ratingResult.status === 'fulfilled' ? ratingResult.value : null;
             const statusData = statusResult.status === 'fulfilled' ? statusResult.value : null;
 
-            if (userData?.status === 'OK' && userData.result.length > 0) {
-                setCfUser(userData.result[0]);
-            }
-            if (ratingData?.status === 'OK') {
-                setHistory(ratingData.result);
-            }
-            if (statusData?.status === 'OK') {
-                setSubmissions(statusData.result);
-            }
+            if (userData?.status === 'OK' && userData.result.length > 0) setCfUser(userData.result[0]);
+            if (ratingData?.status === 'OK') setHistory(ratingData.result);
+            if (statusData?.status === 'OK') setSubmissions(statusData.result);
 
             if (userData && ratingData && statusData) {
                 try {
@@ -86,29 +80,29 @@ export default function ProfilePage() {
 
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-[#09090b] pt-20 pb-16 px-4 md:px-6">
+            <div className="min-h-screen bg-[#09090b] pt-4 md:pt-20 pb-24 md:pb-16 px-4">
                 <div className="mx-auto max-w-4xl">
 
                     {/* Profile Card */}
-                    <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] p-6 md:p-8 mb-6">
+                    <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] p-4 md:p-8 mb-4 md:mb-6">
                         {loading ? (
-                            <div className="flex items-start gap-6">
-                                <div className="w-20 h-20 rounded-lg bg-white/[0.04] skeleton" />
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg bg-white/[0.04] skeleton flex-shrink-0" />
                                 <div className="flex-1">
-                                    <div className="h-6 w-32 rounded bg-white/[0.04] skeleton mb-3" />
-                                    <div className="h-8 w-48 rounded bg-white/[0.04] skeleton" />
+                                    <div className="h-4 w-20 rounded bg-white/[0.04] skeleton mb-2" />
+                                    <div className="h-6 w-32 rounded bg-white/[0.04] skeleton" />
                                 </div>
                             </div>
                         ) : cfUser ? (
-                            <div className="flex flex-col md:flex-row gap-6">
+                            <div className="flex flex-col sm:flex-row gap-4 md:gap-6">
                                 {/* Avatar */}
                                 <div className="flex-shrink-0">
-                                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06]">
+                                    <div className="w-16 h-16 md:w-24 md:h-24 rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06]">
                                         {cfUser.titlePhoto ? (
                                             <img src={cfUser.titlePhoto} alt="" className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
-                                                <UserIcon className="h-8 w-8 text-zinc-600" />
+                                                <UserIcon className="h-6 w-6 md:h-8 md:w-8 text-zinc-600" />
                                             </div>
                                         )}
                                     </div>
@@ -117,7 +111,7 @@ export default function ProfilePage() {
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className={`text-sm font-medium capitalize ${rankColor}`}>
+                                        <span className={`text-xs md:text-sm font-medium capitalize ${rankColor}`}>
                                             {cfUser.rank || 'Unrated'}
                                         </span>
                                     </div>
@@ -125,38 +119,38 @@ export default function ProfilePage() {
                                     <a
                                         href={`https://codeforces.com/profile/${cfUser.handle}`}
                                         target="_blank"
-                                        className={`text-2xl md:text-3xl font-semibold ${rankColor} hover:opacity-80 transition-opacity inline-flex items-center gap-2`}
+                                        className={`text-xl md:text-3xl font-semibold ${rankColor} hover:opacity-80 transition-opacity inline-flex items-center gap-2`}
                                     >
                                         {cfUser.handle}
-                                        <ExternalLink className="h-4 w-4 text-zinc-600" />
+                                        <ExternalLink className="h-3 w-3 md:h-4 md:w-4 text-zinc-600" />
                                     </a>
 
                                     {/* Stats Grid */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-4 md:mt-6">
                                         <div>
-                                            <div className="text-zinc-600 text-xs uppercase tracking-wider mb-1">Rating</div>
-                                            <div className={`text-xl font-semibold font-mono ${rankColor}`}>{cfUser.rating}</div>
+                                            <div className="text-zinc-600 text-[10px] md:text-xs uppercase tracking-wider mb-0.5">Rating</div>
+                                            <div className={`text-lg md:text-xl font-semibold font-mono ${rankColor}`}>{cfUser.rating}</div>
                                         </div>
                                         <div>
-                                            <div className="text-zinc-600 text-xs uppercase tracking-wider mb-1">Max Rating</div>
-                                            <div className={`text-xl font-semibold font-mono ${getRankColor(cfUser.maxRating)}`}>{cfUser.maxRating}</div>
+                                            <div className="text-zinc-600 text-[10px] md:text-xs uppercase tracking-wider mb-0.5">Max</div>
+                                            <div className={`text-lg md:text-xl font-semibold font-mono ${getRankColor(cfUser.maxRating)}`}>{cfUser.maxRating}</div>
                                         </div>
                                         <div>
-                                            <div className="text-zinc-600 text-xs uppercase tracking-wider mb-1">Contribution</div>
-                                            <div className={`text-xl font-semibold font-mono ${cfUser.contribution >= 0 ? 'text-emerald-500' : 'text-zinc-500'}`}>
+                                            <div className="text-zinc-600 text-[10px] md:text-xs uppercase tracking-wider mb-0.5">Contrib</div>
+                                            <div className={`text-lg md:text-xl font-semibold font-mono ${cfUser.contribution >= 0 ? 'text-emerald-500' : 'text-zinc-500'}`}>
                                                 {cfUser.contribution > 0 ? '+' : ''}{cfUser.contribution}
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="text-zinc-600 text-xs uppercase tracking-wider mb-1">Friends</div>
-                                            <div className="text-xl font-semibold font-mono text-zinc-300">{cfUser.friendOfCount}</div>
+                                            <div className="text-zinc-600 text-[10px] md:text-xs uppercase tracking-wider mb-0.5">Friends</div>
+                                            <div className="text-lg md:text-xl font-semibold font-mono text-zinc-300">{cfUser.friendOfCount}</div>
                                         </div>
                                     </div>
 
                                     {/* Footer */}
-                                    <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/[0.04]">
-                                        <span className="text-xs text-zinc-600">
-                                            Member since {new Date(cfUser.registrationTimeSeconds * 1000).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                    <div className="flex items-center justify-between mt-4 md:mt-6 pt-3 md:pt-4 border-t border-white/[0.04]">
+                                        <span className="text-[10px] md:text-xs text-zinc-600">
+                                            Since {new Date(cfUser.registrationTimeSeconds * 1000).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                                         </span>
                                         <button
                                             onClick={async () => {
@@ -167,7 +161,7 @@ export default function ProfilePage() {
                                                     else alert('Failed to unlink');
                                                 } catch { alert('Failed to unlink'); }
                                             }}
-                                            className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-red-400 transition-colors"
+                                            className="inline-flex items-center gap-1 text-[10px] md:text-xs text-zinc-600 hover:text-red-400 transition-colors"
                                         >
                                             <Unlink className="h-3 w-3" />
                                             Unlink
@@ -177,11 +171,11 @@ export default function ProfilePage() {
                             </div>
                         ) : (
                             /* Link Account */
-                            <div className="text-center py-8">
-                                <UserIcon className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
-                                <h2 className="text-lg font-semibold text-white mb-2">Link Codeforces Account</h2>
-                                <p className="text-zinc-500 text-sm mb-6 max-w-sm mx-auto">
-                                    Connect your handle to see your stats and track progress.
+                            <div className="text-center py-6 md:py-8">
+                                <UserIcon className="h-10 w-10 md:h-12 md:w-12 text-zinc-700 mx-auto mb-3 md:mb-4" />
+                                <h2 className="text-base md:text-lg font-semibold text-white mb-2">Link Codeforces</h2>
+                                <p className="text-zinc-500 text-xs md:text-sm mb-4 md:mb-6 max-w-xs mx-auto">
+                                    Connect your handle to see your stats.
                                 </p>
                                 <form
                                     onSubmit={async (e) => {
@@ -206,15 +200,15 @@ export default function ProfilePage() {
                                         type="text"
                                         name="handle"
                                         placeholder="CF Handle"
-                                        className="px-4 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-white/[0.15] w-40"
+                                        className="px-3 md:px-4 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm placeholder-zinc-600 focus:outline-none w-32 md:w-40"
                                         required
                                     />
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium disabled:opacity-50 transition-colors"
+                                        className="px-4 md:px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium disabled:opacity-50 transition-colors"
                                     >
-                                        {loading ? 'Linking...' : 'Link'}
+                                        {loading ? '...' : 'Link'}
                                     </button>
                                 </form>
                             </div>
@@ -223,42 +217,33 @@ export default function ProfilePage() {
 
                     {/* Activity Heatmap */}
                     {cfUser && (
-                        <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] p-6 mb-6">
-                            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-4">Activity</h3>
-                            <ActivityHeatmap submissions={submissions} />
+                        <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] p-4 md:p-6 mb-4 md:mb-6">
+                            <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-3 md:mb-4">Activity</h3>
+                            <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+                                <ActivityHeatmap submissions={submissions} />
+                            </div>
                         </div>
                     )}
 
-                    {/* CFSpeed Training Stats */}
-                    <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] p-6">
-                        <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-6">Training Stats</h3>
+                    {/* Training Stats */}
+                    <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] p-4 md:p-6">
+                        <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-4 md:mb-6">CFSpeed Stats</h3>
 
-                        <div className="grid md:grid-cols-3 gap-4">
-                            <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Clock className="h-4 w-4 text-indigo-400" />
-                                    <span className="text-xs text-zinc-500 uppercase tracking-wide">Time</span>
-                                </div>
-                                <div className="text-2xl font-semibold font-mono text-white">0h 00m</div>
-                                <div className="text-xs text-zinc-600 mt-1">Total focused</div>
+                        <div className="grid grid-cols-3 gap-2 md:gap-4">
+                            <div className="p-3 md:p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] text-center">
+                                <Clock className="h-4 w-4 md:h-5 md:w-5 text-indigo-400 mx-auto mb-2" />
+                                <div className="text-lg md:text-2xl font-semibold font-mono text-white">0h</div>
+                                <div className="text-[10px] md:text-xs text-zinc-600">Time</div>
                             </div>
-
-                            <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Target className="h-4 w-4 text-emerald-400" />
-                                    <span className="text-xs text-zinc-500 uppercase tracking-wide">Solved</span>
-                                </div>
-                                <div className="text-2xl font-semibold font-mono text-white">0</div>
-                                <div className="text-xs text-zinc-600 mt-1">On CFSpeed</div>
+                            <div className="p-3 md:p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] text-center">
+                                <Target className="h-4 w-4 md:h-5 md:w-5 text-emerald-400 mx-auto mb-2" />
+                                <div className="text-lg md:text-2xl font-semibold font-mono text-white">0</div>
+                                <div className="text-[10px] md:text-xs text-zinc-600">Solved</div>
                             </div>
-
-                            <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <TrendingUp className="h-4 w-4 text-orange-400" />
-                                    <span className="text-xs text-zinc-500 uppercase tracking-wide">Avg Speed</span>
-                                </div>
-                                <div className="text-2xl font-semibold font-mono text-white">—</div>
-                                <div className="text-xs text-zinc-600 mt-1">Per problem</div>
+                            <div className="p-3 md:p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] text-center">
+                                <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-orange-400 mx-auto mb-2" />
+                                <div className="text-lg md:text-2xl font-semibold font-mono text-white">—</div>
+                                <div className="text-[10px] md:text-xs text-zinc-600">Avg</div>
                             </div>
                         </div>
                     </div>

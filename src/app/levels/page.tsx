@@ -46,26 +46,26 @@ export default async function LevelsPage({ searchParams }: PageProps) {
 
 function renderPage(selectedStage: string, currentStageData: LevelsSummary[string], currentStageInfo: typeof STAGES[number]) {
     return (
-        <div className="min-h-screen bg-[#09090b] pt-20 pb-16 px-4 md:px-6">
+        <div className="min-h-screen bg-[#09090b] pt-4 md:pt-20 pb-24 md:pb-16 px-4">
             <div className="mx-auto max-w-6xl">
                 {/* Header */}
-                <div className="mb-10">
-                    <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-2">
+                <div className="mb-6 md:mb-10">
+                    <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-white mb-1">
                         Select Level
                     </h1>
-                    <p className="text-zinc-500 text-base max-w-xl">
-                        Choose your difficulty. Each level is calibrated to real Codeforces problem tiers.
+                    <p className="text-zinc-500 text-sm md:text-base">
+                        Choose your difficulty tier
                     </p>
                 </div>
 
-                {/* Stage Selector */}
-                <div className="mb-10">
-                    <div className="inline-flex p-1 rounded-lg bg-[#0d0d0f] border border-white/[0.06]">
+                {/* Stage Selector - Horizontal Scroll on Mobile */}
+                <div className="mb-6 md:mb-10 -mx-4 px-4 overflow-x-auto scrollbar-hide">
+                    <div className="inline-flex p-1 rounded-lg bg-[#0d0d0f] border border-white/[0.06] min-w-max">
                         {STAGES.map((stage) => (
                             <a
                                 key={stage.id}
                                 href={`/levels?stage=${stage.id}`}
-                                className={`relative px-4 py-2 text-sm font-medium rounded-md transition-all ${selectedStage === stage.id
+                                className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md transition-all whitespace-nowrap ${selectedStage === stage.id
                                         ? 'text-white bg-white/[0.08]'
                                         : 'text-zinc-500 hover:text-zinc-300'
                                     }`}
@@ -76,24 +76,23 @@ function renderPage(selectedStage: string, currentStageData: LevelsSummary[strin
                     </div>
                 </div>
 
-                {/* Stage Info Bar */}
-                <div className="flex items-center gap-6 mb-8 px-4 py-3 rounded-lg bg-[#0d0d0f] border border-white/[0.06]">
+                {/* Stage Info */}
+                <div className="flex flex-wrap items-center gap-3 md:gap-6 mb-6 md:mb-8 p-3 md:p-4 rounded-lg bg-[#0d0d0f] border border-white/[0.06]">
                     <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${currentStageInfo.color}`} />
-                        <span className="text-sm font-medium text-white">{currentStageInfo.name}</span>
+                        <span className="text-xs md:text-sm font-medium text-white">{currentStageInfo.name}</span>
                     </div>
-                    <div className="h-4 w-px bg-white/10" />
-                    <span className="text-sm text-zinc-500">
-                        Target: Top {currentStageData.percentile_target.replace('p', '')}%
+                    <div className="hidden md:block h-4 w-px bg-white/10" />
+                    <span className="text-xs md:text-sm text-zinc-500">
+                        Top {currentStageData.percentile_target.replace('p', '')}%
                     </span>
-                    <div className="h-4 w-px bg-white/10" />
-                    <span className="text-sm text-zinc-500">
+                    <span className="text-xs md:text-sm text-zinc-500 ml-auto">
                         {Object.values(currentStageData.levels).reduce((a, b) => a + b.count, 0).toLocaleString()} problems
                     </span>
                 </div>
 
-                {/* Grid */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {/* Grid - 2 cols on mobile, 4 on desktop */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {Object.entries(LEVEL_MAPPING).map(([levelKey, info]) => {
                         const levelData = currentStageData.levels[levelKey];
                         if (!levelData) return null;

@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google"; // Corrected import
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import Navbar from "@/components/Navbar";
+import MobileNav from "@/components/MobileNav";
 import NextTopLoader from 'nextjs-toploader';
 import PageTransition from "@/components/PageTransition";
 import MainWrapper from "@/components/MainWrapper";
@@ -22,6 +23,13 @@ export const metadata: Metadata = {
   description: "Codeforces Speed Training",
 };
 
+export const viewport: Viewport = {
+  themeColor: '#09090b',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,7 +41,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NextTopLoader
-          color="#818cf8" // Indigo-400
+          color="#818cf8"
           initialPosition={0.08}
           crawlSpeed={100}
           height={2}
@@ -50,6 +58,7 @@ export default function RootLayout({
               {children}
             </MainWrapper>
           </PageTransition>
+          <MobileNav />
         </Providers>
       </body>
     </html>
