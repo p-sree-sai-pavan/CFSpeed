@@ -18,8 +18,15 @@ export default function LandingPage() {
                 <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
 
                 <div className="relative z-10 max-w-5xl mx-auto text-center">
-                    {/* Badge */}
+                    {/* Logo */}
                     <ScrollFade>
+                        <div className="flex justify-center mb-8">
+                            <img src="/logo.svg" alt="CFSpeed" className="h-20 w-20 md:h-28 md:w-28 drop-shadow-2xl" />
+                        </div>
+                    </ScrollFade>
+
+                    {/* Badge */}
+                    <ScrollFade delay={25}>
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-sm">
                             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                             <span className="text-neutral-400 text-sm font-medium">Speed Training for Competitive Programmers</span>

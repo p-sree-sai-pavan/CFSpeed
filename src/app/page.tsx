@@ -20,6 +20,11 @@ export default async function Home() {
 
         {/* Hero */}
         <div className="text-center mb-8 md:mb-16">
+          {/* Logo */}
+          <div className="flex justify-center mb-6 md:mb-8">
+            <img src="/logo.svg" alt="CFSpeed" className="h-16 w-16 md:h-24 md:w-24" />
+          </div>
+
           <h1 className="text-2xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-white mb-2 md:mb-4">
             Welcome back
           </h1>
