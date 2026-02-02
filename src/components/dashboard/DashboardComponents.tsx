@@ -91,7 +91,7 @@ export function ContinueSection() {
             <h2 className="text-[var(--text-primary)] text-lg font-bold mb-6">Continue</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Last Problem */}
-                <div className="p-6 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border)] hover:bg-[var(--surface)] transition-none cursor-default group">
+                <div className="p-6 rounded-lg border border-[var(--border)] bg-[var(--surface)] relative hover:border-[var(--border)] hover:bg-[var(--surface)] transition-none cursor-default group">
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <div className="text-[var(--text-secondary)] text-xs uppercase font-bold mb-1">Last Problem</div>
