@@ -1,10 +1,13 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import { Suspense } from 'react';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import UpcomingContests from '@/components/UpcomingContests';
 import LandingPage from '@/components/LandingPage';
 import { ArrowRight, Zap, Trophy } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ContestsSkeleton } from '@/components/Skeletons';
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -20,8 +23,14 @@ export default async function Home() {
         {/* Hero */}
         <div className="text-center mb-8 md:mb-16">
           {/* Logo */}
-          <div className="flex justify-center mb-6 md:mb-8">
-            <img src="/logo.svg" alt="CFSpeed" className="h-16 w-16 md:h-24 md:w-24" />
+          <div className="flex justify-center mb-6 md:mb-8 relative h-16 w-16 md:h-24 md:w-24 mx-auto">
+            <Image
+              src="/logo.svg"
+              alt="CFSpeed"
+              fill
+              priority
+              className="object-contain"
+            />
           </div>
 
           <h1 className="text-2xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-white mb-2 md:mb-4">
@@ -103,7 +112,9 @@ export default async function Home() {
 
         {/* Upcoming Contests */}
         <ErrorBoundary>
-          <UpcomingContests />
+          <Suspense fallback={<ContestsSkeleton />}>
+            <UpcomingContests />
+          </Suspense>
         </ErrorBoundary>
       </div>
     </div>

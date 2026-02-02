@@ -1,65 +1,22 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import { Calendar, Clock, ExternalLink } from 'lucide-react';
-import { ContestsSkeleton } from './Skeletons';
+import { getUpcomingContests, type Contest } from '@/lib/cf';
 
-interface Contest {
-    id: number;
-    name: string;
-    startTimeSeconds: number;
-    durationSeconds: number;
-}
-
-export default function UpcomingContests() {
-    const [contests, setContests] = useState<Contest[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
-
-    const fetchContests = async () => {
-        setLoading(true);
-        setError(false);
-        try {
-            const res = await fetch('/api/contests', {
-                next: { revalidate: 300 }
-            } as RequestInit);
-            if (res.ok) {
-                const data = await res.json();
-                setContests(data);
-            } else {
-                setError(true);
-            }
-        } catch (err) {
-            console.error('Failed to fetch contests:', err);
-            setError(true);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchContests();
-    }, []);
-
-    if (loading) {
-        return <ContestsSkeleton />;
+export default async function UpcomingContests() {
+    let contests: Contest[] = [];
+    try {
+        contests = await getUpcomingContests();
+    } catch (error) {
+        console.error('Failed to fetch contests:', error);
     }
 
-    if (error) {
-        return (
-            <div className="w-full p-4 rounded-xl bg-[#0d0d0f] border border-white/[0.06] text-center">
-                <p className="text-zinc-500 text-xs mb-2">Failed to load contests</p>
-                <button
-                    onClick={fetchContests}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-                >
-                    Try again
-                </button>
-            </div>
-        );
+    if (contests.length === 0) {
+        // Return null or a fallback if completely failed/empty, 
+        // essentially mirroring the "no contests" state.
+        return null;
     }
 
-    if (contests.length === 0) return null;
+    // Limit to 3 items
+    const displayContests = contests.slice(0, 3);
 
     return (
         <div className="w-full">
@@ -69,7 +26,7 @@ export default function UpcomingContests() {
             </div>
 
             <div className="space-y-2">
-                {contests.slice(0, 3).map((contest) => {
+                {displayContests.map((contest) => {
                     const startDate = new Date(contest.startTimeSeconds * 1000);
                     const isWithin24h = (contest.startTimeSeconds * 1000 - Date.now()) < 24 * 60 * 60 * 1000;
 
