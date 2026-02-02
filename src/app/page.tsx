@@ -8,16 +8,33 @@ import {
   PerformanceInsights
 } from '@/components/dashboard/DashboardComponents';
 
+// Timeout wrapper to prevent infinite hangs
+async function getSessionWithTimeout(timeoutMs: number = 5000) {
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Session fetch timeout')), timeoutMs);
+  });
+
+  try {
+    const session = await Promise.race([
+      getServerSession(authOptions),
+      timeoutPromise
+    ]);
+    return session;
+  } catch (error) {
+    console.error('Session fetch failed:', error);
+    return null;
+  }
+}
+
 export default async function Home() {
-  const session = await getServerSession(authOptions);
+  const session = await getSessionWithTimeout(5000);
 
   if (!session) {
     return <LandingPage />;
   }
 
   // Safe defaults if data is missing
-  const rating = session.user?.cfRating || 0;
-  // TODO: Fetch real level from DB once `Level` is effectively integrated into User/Session
+  const rating = (session as any).user?.cfRating || 0;
   const level = "4";
 
   return (
@@ -55,3 +72,4 @@ export default async function Home() {
     </div>
   );
 }
+
