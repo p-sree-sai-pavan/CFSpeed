@@ -22,8 +22,8 @@ export default function MobileNav() {
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-            {/* Background with blur */}
-            <div className="absolute inset-0 bg-[#09090b]/95 backdrop-blur-xl border-t border-white/[0.06]" />
+            {/* Background with blur - GPU accelerated */}
+            <div className="absolute inset-0 bg-[#09090b]/95 backdrop-blur-xl border-t border-white/[0.06] transform-gpu will-change-transform" />
 
             {/* Tabs */}
             <div className="relative flex items-center justify-around px-2 h-16 pb-safe">
@@ -37,8 +37,8 @@ export default function MobileNav() {
                             key={tab.href}
                             href={tab.href}
                             className={`flex flex-col items-center justify-center gap-0.5 min-w-[56px] py-2 rounded-xl transition-all ${isActive
-                                    ? 'text-rose-500'
-                                    : 'text-zinc-600 active:text-zinc-400'
+                                ? 'text-rose-500'
+                                : 'text-zinc-600 active:text-zinc-400'
                                 }`}
                         >
                             <div className={`relative p-1.5 rounded-lg transition-all ${isActive ? 'bg-rose-500/10' : ''

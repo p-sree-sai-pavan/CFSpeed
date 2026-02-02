@@ -105,12 +105,19 @@ export function getProblemUrl(problemId: string): string {
     return `https://codeforces.com/problemset/problem/${problemId.slice(0, -1)}/${problemId.slice(-1)}`;
 }
 
-// Fetch upcoming contests with caching
+// Fetch upcoming contests with caching and timeout
 export async function getUpcomingContests(): Promise<Contest[]> {
     try {
+        // Add 5-second timeout to prevent hanging on slow API
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const res = await fetch(`${CF_API_BASE}/contest.list?gym=false`, {
-            next: { revalidate: 300 } // Cache for 5 minutes
+            next: { revalidate: 300 }, // Cache for 5 minutes
+            signal: controller.signal,
         });
+        clearTimeout(timeoutId);
+
         const data = await res.json();
 
         if (data.status === 'OK') {
@@ -121,7 +128,12 @@ export async function getUpcomingContests(): Promise<Contest[]> {
         }
         return [];
     } catch (error) {
-        console.error('Error fetching contests:', error);
+        // Log timeout specifically for debugging
+        if (error instanceof Error && error.name === 'AbortError') {
+            console.error('CF API timeout after 5 seconds');
+        } else {
+            console.error('Error fetching contests:', error);
+        }
         return [];
     }
 }

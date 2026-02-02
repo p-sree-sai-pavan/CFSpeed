@@ -1,11 +1,45 @@
-import { Calendar, Clock, ExternalLink } from 'lucide-react';
-import { Contest } from '@/lib/cf';
+'use client';
 
-interface UpcomingContestsProps {
-    contests: Contest[];
+import { useState, useEffect } from 'react';
+import { Calendar, Clock, ExternalLink } from 'lucide-react';
+import { ContestsSkeleton } from './Skeletons';
+
+interface Contest {
+    id: number;
+    name: string;
+    startTimeSeconds: number;
+    durationSeconds: number;
 }
 
-export default function UpcomingContests({ contests }: UpcomingContestsProps) {
+export default function UpcomingContests() {
+    const [contests, setContests] = useState<Contest[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchContests = async () => {
+            try {
+                const res = await fetch('/api/contests', {
+                    next: { revalidate: 300 }
+                } as RequestInit);
+                if (res.ok) {
+                    const data = await res.json();
+                    setContests(data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch contests:', error);
+                // Graceful degradation - just show nothing
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchContests();
+    }, []);
+
+    if (loading) {
+        return <ContestsSkeleton />;
+    }
+
     if (contests.length === 0) return null;
 
     return (

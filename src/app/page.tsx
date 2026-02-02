@@ -2,13 +2,11 @@ import Link from 'next/link';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import UpcomingContests from '@/components/UpcomingContests';
-import { getUpcomingContests } from '@/lib/cf';
 import LandingPage from '@/components/LandingPage';
 import { ArrowRight, Zap, Trophy } from 'lucide-react';
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
-  const contests = await getUpcomingContests();
 
   if (!session) {
     return <LandingPage />;
@@ -103,7 +101,7 @@ export default async function Home() {
         </div>
 
         {/* Upcoming Contests */}
-        <UpcomingContests contests={contests} />
+        <UpcomingContests />
       </div>
     </div>
   );

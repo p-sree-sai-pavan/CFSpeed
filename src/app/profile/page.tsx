@@ -35,11 +35,16 @@ export default function ProfilePage() {
 
         setLoading(true);
 
+        // 5 second timeout for all API calls
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         Promise.allSettled([
-            fetch(`https://codeforces.com/api/user.info?handles=${handle}`).then(res => res.json()),
-            fetch(`https://codeforces.com/api/user.rating?handle=${handle}`).then(res => res.json()),
-            fetch(`https://codeforces.com/api/user.status?handle=${handle}`).then(res => res.json())
+            fetch(`https://codeforces.com/api/user.info?handles=${handle}`, { signal: controller.signal }).then(res => res.json()),
+            fetch(`https://codeforces.com/api/user.rating?handle=${handle}`, { signal: controller.signal }).then(res => res.json()),
+            fetch(`https://codeforces.com/api/user.status?handle=${handle}`, { signal: controller.signal }).then(res => res.json())
         ]).then(([userResult, ratingResult, statusResult]) => {
+            clearTimeout(timeoutId);
             const userData = userResult.status === 'fulfilled' ? userResult.value : null;
             const ratingData = ratingResult.status === 'fulfilled' ? ratingResult.value : null;
             const statusData = statusResult.status === 'fulfilled' ? statusResult.value : null;
@@ -161,7 +166,7 @@ export default function ProfilePage() {
                                                     else alert('Failed to unlink');
                                                 } catch { alert('Failed to unlink'); }
                                             }}
-                                            className="inline-flex items-center gap-1 text-[10px] md:text-xs text-zinc-600 hover:text-red-400 transition-colors"
+                                            className="inline-flex items-center gap-1 text-[10px] md:text-xs text-zinc-600 hover:text-red-400 transition-colors p-3 -m-3 touch-target flex justify-center"
                                         >
                                             <Unlink className="h-3 w-3" />
                                             Unlink
@@ -200,13 +205,13 @@ export default function ProfilePage() {
                                         type="text"
                                         name="handle"
                                         placeholder="CF Handle"
-                                        className="px-3 md:px-4 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm placeholder-zinc-600 focus:outline-none w-32 md:w-40"
+                                        className="px-3 md:px-4 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm placeholder-zinc-600 focus:outline-none w-32 md:w-40 touch-target"
                                         required
                                     />
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="px-4 md:px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium disabled:opacity-50 transition-colors"
+                                        className="px-4 md:px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium disabled:opacity-50 transition-colors touch-target flex items-center"
                                     >
                                         {loading ? '...' : 'Link'}
                                     </button>

@@ -1,0 +1,53 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "framework": "nextjs",
+    "regions": [
+        "iad1",
+        "sfo1",
+        "sin1"
+    ],
+    "functions": {
+        "src/app/api/**/*.ts": {
+            "memory": 1024,
+            "maxDuration": 10
+        }
+    },
+    "headers": [
+        {
+            "source": "/api/contests",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, s-maxage=300, stale-while-revalidate=600"
+                }
+            ]
+        },
+        {
+            "source": "/(.*).js",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
+        },
+        {
+            "source": "/(.*).css",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
+        },
+        {
+            "source": "/(.*).(png|jpg|jpeg|gif|webp|svg|ico)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
+        }
+    ]
+}

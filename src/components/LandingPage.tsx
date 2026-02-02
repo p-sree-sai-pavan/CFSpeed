@@ -21,7 +21,7 @@ export default function LandingPage() {
                     {/* Logo */}
                     <ScrollFade>
                         <div className="flex justify-center mb-8">
-                            <img src="/logo.svg" alt="CFSpeed" className="h-20 w-20 md:h-28 md:w-28 drop-shadow-2xl" />
+                            <Image src="/logo.svg" alt="CFSpeed" width={112} height={112} className="drop-shadow-2xl" priority />
                         </div>
                     </ScrollFade>
 
@@ -96,10 +96,13 @@ export default function LandingPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <img
+                                <Image
                                     src="/levels.png"
                                     alt="CFSpeed - Select Your Level"
+                                    width={1200}
+                                    height={800}
                                     className="w-full h-auto"
+                                    priority
                                 />
                             </div>
                         </div>
@@ -112,10 +115,13 @@ export default function LandingPage() {
                                 transformOrigin: 'right center'
                             }}
                         >
-                            <img
+                            <Image
                                 src="/timer.png"
                                 alt="Timer"
+                                width={256}
+                                height={200}
                                 className="w-full h-auto"
+                                loading="lazy"
                             />
                             {/* Glassmorphism overlay */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -129,10 +135,13 @@ export default function LandingPage() {
                                 transformOrigin: 'left center'
                             }}
                         >
-                            <img
+                            <Image
                                 src="/contest.png"
                                 alt="Contest Mode"
+                                width={256}
+                                height={200}
                                 className="w-full h-auto"
+                                loading="lazy"
                             />
                             {/* Glassmorphism overlay */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -342,7 +351,7 @@ export default function LandingPage() {
                         <ScrollScale delay={0}>
                             <div className="md:col-span-2 relative group rounded-2xl overflow-hidden bg-[#0d0d0e] border border-white/5">
                                 <div className="absolute inset-0 bg-gradient-to-br from-rose-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                <img src="/problems.png" alt="Problem Library" className="w-full h-auto" />
+                                <Image src="/problems.png" alt="Problem Library" width={800} height={500} className="w-full h-auto" loading="lazy" />
                                 <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
                                     <h3 className="text-lg font-semibold text-white">Problem Library</h3>
                                     <p className="text-neutral-400 text-sm">Browse 11,000+ curated problems</p>
@@ -354,7 +363,7 @@ export default function LandingPage() {
                         <ScrollScale delay={100}>
                             <div className="relative group rounded-2xl overflow-hidden bg-[#0d0d0e] border border-white/5">
                                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                <img src="/profile.png" alt="Profile" className="w-full h-auto" />
+                                <Image src="/profile.png" alt="Profile" width={400} height={300} className="w-full h-auto" loading="lazy" />
                                 <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
                                     <h3 className="text-lg font-semibold text-white">Your Profile</h3>
                                     <p className="text-neutral-400 text-sm">Track your progress</p>
@@ -366,7 +375,7 @@ export default function LandingPage() {
                         <ScrollScale delay={150}>
                             <div className="relative group rounded-2xl overflow-hidden bg-[#0d0d0e] border border-white/5">
                                 <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                <img src="/timer.png" alt="Timer" className="w-full h-auto" />
+                                <Image src="/timer.png" alt="Timer" width={400} height={300} className="w-full h-auto" loading="lazy" />
                                 <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
                                     <h3 className="text-lg font-semibold text-white">Adaptive Timer</h3>
                                     <p className="text-neutral-400 text-sm">Real-time countdown</p>
@@ -378,7 +387,7 @@ export default function LandingPage() {
                         <ScrollScale delay={200}>
                             <div className="md:col-span-2 relative group rounded-2xl overflow-hidden bg-[#0d0d0e] border border-white/5">
                                 <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                <img src="/contest.png" alt="Contest Mode" className="w-full h-auto" />
+                                <Image src="/contest.png" alt="Contest Mode" width={800} height={500} className="w-full h-auto" loading="lazy" />
                                 <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
                                     <h3 className="text-lg font-semibold text-white">Contest Mode</h3>
                                     <p className="text-neutral-400 text-sm">Simulate 5-problem virtual contests</p>

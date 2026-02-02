@@ -19,6 +19,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react'],
+    staleTimes: {
+      dynamic: 300, // Cache dynamic pages in router for 5 minutes
+    },
   },
 };
 
