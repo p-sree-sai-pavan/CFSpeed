@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
-import { ExternalLink, Trophy, TrendingUp, Clock, Target, User as UserIcon } from 'lucide-react';
+import { ExternalLink, TrendingUp, Clock, Target, User as UserIcon, Unlink } from 'lucide-react';
 import ActivityHeatmap from '@/components/profile/ActivityHeatmap';
 import AuthGuard from '@/components/AuthGuard';
 
@@ -13,13 +13,12 @@ export default function ProfilePage() {
     const [submissions, setSubmissions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Fetch rich CF data with caching
     useEffect(() => {
         if (!session?.user?.cfHandle) return;
 
         const handle = session.user.cfHandle;
         const cacheKey = `cf_${handle}`;
-        const cacheExpiry = 5 * 60 * 1000; // 5 minutes
+        const cacheExpiry = 5 * 60 * 1000;
 
         const cached = sessionStorage.getItem(cacheKey);
         if (cached) {
@@ -31,9 +30,7 @@ export default function ProfilePage() {
                     setSubmissions(data.statusData);
                     return;
                 }
-            } catch (e) {
-                // Invalid cache, continue to fetch
-            }
+            } catch (e) { }
         }
 
         setLoading(true);
@@ -57,7 +54,6 @@ export default function ProfilePage() {
                 setSubmissions(statusData.result);
             }
 
-            // Cache successful results
             if (userData && ratingData && statusData) {
                 try {
                     sessionStorage.setItem(cacheKey, JSON.stringify({
@@ -68,9 +64,7 @@ export default function ProfilePage() {
                         },
                         timestamp: Date.now()
                     }));
-                } catch (e) {
-                    // Storage quota exceeded or disabled
-                }
+                } catch (e) { }
             }
         })
             .catch(err => console.error('Profile fetch error:', err))
@@ -78,114 +72,119 @@ export default function ProfilePage() {
     }, [session?.user?.cfHandle]);
 
     const getRankColor = (rating: number) => {
-        if (rating < 1200) return 'text-zinc-400'; // Newbie
-        if (rating < 1400) return 'text-green-500'; // Pupil
-        if (rating < 1600) return 'text-cyan-400'; // Specialist
-        if (rating < 1900) return 'text-blue-500'; // Expert
-        if (rating < 2100) return 'text-violet-500'; // CM
-        if (rating < 2400) return 'text-orange-400'; // Master
-        if (rating < 2600) return 'text-rose-500'; // GM
-        return 'text-red-600'; // LGM+
+        if (rating < 1200) return 'text-zinc-400';
+        if (rating < 1400) return 'text-emerald-500';
+        if (rating < 1600) return 'text-cyan-400';
+        if (rating < 1900) return 'text-blue-500';
+        if (rating < 2100) return 'text-violet-500';
+        if (rating < 2400) return 'text-orange-400';
+        if (rating < 2600) return 'text-rose-500';
+        return 'text-red-500';
     };
 
     const rankColor = cfUser?.rating ? getRankColor(cfUser.rating) : 'text-white';
 
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-black px-4 py-20 text-white relative overflow-hidden">
-                {/* Background */}
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-900/10 rounded-full blur-[100px] -z-10 translate-x-1/2 -translate-y-1/2" />
+            <div className="min-h-screen bg-[#09090b] pt-20 pb-16 px-4 md:px-6">
+                <div className="mx-auto max-w-4xl">
 
-                <div className="mx-auto max-w-5xl">
-
-                    {/* 1. Codeforces Identity Card */}
-                    <div className="bg-white rounded-lg p-4 md:p-6 text-black shadow-xl mb-8 border-l-4 md:border-l-8 border-indigo-500 flex flex-col md:flex-row gap-4 md:gap-6 relative overflow-hidden">
-                        {/* Watermark Logo */}
-                        <div className="absolute right-[-20px] bottom-[-20px] opacity-5 pointer-events-none">
-                            <TrendingUp className="h-64 w-64 text-black" />
-                        </div>
-
-                        <div className="z-10 flex-shrink-0">
-                            <div className="h-24 w-24 md:h-40 md:w-40 rounded-md overflow-hidden bg-zinc-200 border border-zinc-300 shadow-inner group mx-auto md:mx-0">
-                                {cfUser?.titlePhoto ? (
-                                    <img src={cfUser.titlePhoto} alt="Avatar" className="h-full w-full object-cover" />
-                                ) : (
-                                    <div className="h-full w-full flex items-center justify-center text-zinc-400">
-                                        <UserIcon className="h-12 w-12" />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="z-10 flex-grow pt-2">
-                            {loading ? (
-                                <div className="animate-pulse">
-                                    <div className="h-6 bg-zinc-200 w-32 mb-2 rounded"></div>
-                                    <div className="h-8 bg-zinc-200 w-48 mb-4 rounded"></div>
+                    {/* Profile Card */}
+                    <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] p-6 md:p-8 mb-6">
+                        {loading ? (
+                            <div className="flex items-start gap-6">
+                                <div className="w-20 h-20 rounded-lg bg-white/[0.04] skeleton" />
+                                <div className="flex-1">
+                                    <div className="h-6 w-32 rounded bg-white/[0.04] skeleton mb-3" />
+                                    <div className="h-8 w-48 rounded bg-white/[0.04] skeleton" />
                                 </div>
-                            ) : cfUser ? (
-                                <>
-                                    <div className={`font-bold text-lg mb-1 capitalize ${rankColor}`}>
-                                        {cfUser.rank || 'Unrated'}
-                                    </div>
-                                    <h1 className={`text-4xl font-bold mb-4 ${rankColor} drop-shadow-sm`}>
-                                        <a href={`https://codeforces.com/profile/${cfUser.handle}`} target="_blank" className="hover:underline">
-                                            {cfUser.handle}
-                                        </a>
-                                    </h1>
-
-                                    <div className="grid grid-cols-2 gap-y-3 gap-x-4 md:gap-y-4 md:gap-x-8 text-sm">
-                                        <div>
-                                            <div className="text-zinc-500 mb-1 flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Rating</div>
-                                            <div className={`font-bold text-xl ${rankColor}`}>{cfUser.rating}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-zinc-500 mb-1 flex items-center gap-1"><Trophy className="h-3 w-3" /> Max Rating</div>
-                                            <div className={`font-bold text-xl ${getRankColor(cfUser.maxRating)}`}>
-                                                {cfUser.maxRating} <span className="text-xs font-normal text-zinc-400 capitalize">({cfUser.maxRank})</span>
+                            </div>
+                        ) : cfUser ? (
+                            <div className="flex flex-col md:flex-row gap-6">
+                                {/* Avatar */}
+                                <div className="flex-shrink-0">
+                                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.06]">
+                                        {cfUser.titlePhoto ? (
+                                            <img src={cfUser.titlePhoto} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <UserIcon className="h-8 w-8 text-zinc-600" />
                                             </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Info */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className={`text-sm font-medium capitalize ${rankColor}`}>
+                                            {cfUser.rank || 'Unrated'}
+                                        </span>
+                                    </div>
+
+                                    <a
+                                        href={`https://codeforces.com/profile/${cfUser.handle}`}
+                                        target="_blank"
+                                        className={`text-2xl md:text-3xl font-semibold ${rankColor} hover:opacity-80 transition-opacity inline-flex items-center gap-2`}
+                                    >
+                                        {cfUser.handle}
+                                        <ExternalLink className="h-4 w-4 text-zinc-600" />
+                                    </a>
+
+                                    {/* Stats Grid */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                                        <div>
+                                            <div className="text-zinc-600 text-xs uppercase tracking-wider mb-1">Rating</div>
+                                            <div className={`text-xl font-semibold font-mono ${rankColor}`}>{cfUser.rating}</div>
                                         </div>
                                         <div>
-                                            <div className="text-zinc-500 mb-1">Contribution</div>
-                                            <div className={`font-bold text-xl ${cfUser.contribution >= 0 ? 'text-green-600' : 'text-zinc-600'}`}>
+                                            <div className="text-zinc-600 text-xs uppercase tracking-wider mb-1">Max Rating</div>
+                                            <div className={`text-xl font-semibold font-mono ${getRankColor(cfUser.maxRating)}`}>{cfUser.maxRating}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-zinc-600 text-xs uppercase tracking-wider mb-1">Contribution</div>
+                                            <div className={`text-xl font-semibold font-mono ${cfUser.contribution >= 0 ? 'text-emerald-500' : 'text-zinc-500'}`}>
                                                 {cfUser.contribution > 0 ? '+' : ''}{cfUser.contribution}
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="text-zinc-500 mb-1">Friend of</div>
-                                            <div className="font-bold text-xl text-zinc-800">{cfUser.friendOfCount} users</div>
+                                            <div className="text-zinc-600 text-xs uppercase tracking-wider mb-1">Friends</div>
+                                            <div className="text-xl font-semibold font-mono text-zinc-300">{cfUser.friendOfCount}</div>
                                         </div>
                                     </div>
 
-                                    <div className="mt-6 flex items-center justify-between">
-                                        <span className="text-zinc-500 text-sm italic">
-                                            Registered: {new Date(cfUser.registrationTimeSeconds * 1000).toLocaleDateString()}
+                                    {/* Footer */}
+                                    <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/[0.04]">
+                                        <span className="text-xs text-zinc-600">
+                                            Member since {new Date(cfUser.registrationTimeSeconds * 1000).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                                         </span>
                                         <button
                                             onClick={async () => {
-                                                if (!confirm('Are you sure you want to unlink your Codeforces account?')) return;
+                                                if (!confirm('Unlink your Codeforces account?')) return;
                                                 try {
                                                     const res = await fetch('/api/cf/unlink', { method: 'DELETE' });
-                                                    if (res.ok) {
-                                                        window.location.reload();
-                                                    } else {
-                                                        alert('Failed to unlink account');
-                                                    }
-                                                } catch {
-                                                    alert('Failed to unlink account');
-                                                }
+                                                    if (res.ok) window.location.reload();
+                                                    else alert('Failed to unlink');
+                                                } catch { alert('Failed to unlink'); }
                                             }}
-                                            className="text-sm text-red-500 hover:text-red-400 underline transition-colors"
+                                            className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-red-400 transition-colors"
                                         >
-                                            Unlink Account
+                                            <Unlink className="h-3 w-3" />
+                                            Unlink
                                         </button>
                                     </div>
-                                </>
-                            ) : (
-                                <div>
-                                    <h2 className="text-xl font-bold mb-2">No Codeforces Account Linked</h2>
-                                    <p className="text-zinc-600 mb-4">Link your account to see your stats here.</p>
-                                    <form onSubmit={async (e) => {
+                                </div>
+                            </div>
+                        ) : (
+                            /* Link Account */
+                            <div className="text-center py-8">
+                                <UserIcon className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
+                                <h2 className="text-lg font-semibold text-white mb-2">Link Codeforces Account</h2>
+                                <p className="text-zinc-500 text-sm mb-6 max-w-sm mx-auto">
+                                    Connect your handle to see your stats and track progress.
+                                </p>
+                                <form
+                                    onSubmit={async (e) => {
                                         e.preventDefault();
                                         const formData = new FormData(e.currentTarget);
                                         const handle = formData.get('handle');
@@ -196,66 +195,71 @@ export default function ProfilePage() {
                                                 headers: { 'Content-Type': 'application/json' },
                                                 body: JSON.stringify({ handle }),
                                             });
-                                            const data = await res.json();
-                                            if (res.ok) {
-                                                window.location.reload();
-                                            } else {
-                                                alert('Error: ' + data.error);
-                                            }
-                                        } catch (err) {
-                                            alert('Failed to link account');
-                                        } finally {
-                                            setLoading(false);
-                                        }
-                                    }} className="flex gap-2">
-                                        <input type="text" name="handle" placeholder="Enter CF Handle" className="border px-3 py-2 rounded text-black" required />
-                                        <button type="submit" disabled={loading} className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50">
-                                            {loading ? 'Linking...' : 'Link'}
-                                        </button>
-                                    </form>
-                                </div>
-                            )}
-                        </div>
+                                            if (res.ok) window.location.reload();
+                                            else { const data = await res.json(); alert('Error: ' + data.error); }
+                                        } catch { alert('Failed to link'); }
+                                        finally { setLoading(false); }
+                                    }}
+                                    className="flex gap-2 justify-center"
+                                >
+                                    <input
+                                        type="text"
+                                        name="handle"
+                                        placeholder="CF Handle"
+                                        className="px-4 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-white/[0.15] w-40"
+                                        required
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium disabled:opacity-50 transition-colors"
+                                    >
+                                        {loading ? 'Linking...' : 'Link'}
+                                    </button>
+                                </form>
+                            </div>
+                        )}
                     </div>
 
-                    {/* 2. Graphs */}
+                    {/* Activity Heatmap */}
                     {cfUser && (
-                        <div className="mb-8">
+                        <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] p-6 mb-6">
+                            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-4">Activity</h3>
                             <ActivityHeatmap submissions={submissions} />
                         </div>
                     )}
 
-                    {/* 3. CFSpeed Stats Grid */}
-                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                        <Target className="h-6 w-6 text-amber-500" /> Training Stats
-                    </h2>
+                    {/* CFSpeed Training Stats */}
+                    <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] p-6">
+                        <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-6">Training Stats</h3>
 
-                    <div className="grid md:grid-cols-3 gap-6">
-                        <div className="bg-zinc-900/50 border border-white/5 p-6 rounded-2xl backdrop-blur-sm">
-                            <div className="flex items-center gap-3 mb-2">
-                                <Clock className="h-5 w-5 text-indigo-400" />
-                                <span className="text-zinc-400 text-sm font-medium uppercase">Training Time</span>
+                        <div className="grid md:grid-cols-3 gap-4">
+                            <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Clock className="h-4 w-4 text-indigo-400" />
+                                    <span className="text-xs text-zinc-500 uppercase tracking-wide">Time</span>
+                                </div>
+                                <div className="text-2xl font-semibold font-mono text-white">0h 00m</div>
+                                <div className="text-xs text-zinc-600 mt-1">Total focused</div>
                             </div>
-                            <div className="text-3xl font-mono font-bold">0h 00m</div>
-                            <div className="text-xs text-zinc-500 mt-1">Total time focused</div>
-                        </div>
 
-                        <div className="bg-zinc-900/50 border border-white/5 p-6 rounded-2xl backdrop-blur-sm">
-                            <div className="flex items-center gap-3 mb-2">
-                                <Target className="h-5 w-5 text-green-400" />
-                                <span className="text-zinc-400 text-sm font-medium uppercase">Problems Solved</span>
+                            <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Target className="h-4 w-4 text-emerald-400" />
+                                    <span className="text-xs text-zinc-500 uppercase tracking-wide">Solved</span>
+                                </div>
+                                <div className="text-2xl font-semibold font-mono text-white">0</div>
+                                <div className="text-xs text-zinc-600 mt-1">On CFSpeed</div>
                             </div>
-                            <div className="text-3xl font-mono font-bold">0</div>
-                            <div className="text-xs text-zinc-500 mt-1">On CFSpeed platform</div>
-                        </div>
 
-                        <div className="bg-zinc-900/50 border border-white/5 p-6 rounded-2xl backdrop-blur-sm">
-                            <div className="flex items-center gap-3 mb-2">
-                                <TrendingUp className="h-5 w-5 text-orange-400" />
-                                <span className="text-zinc-400 text-sm font-medium uppercase">Avg Speed</span>
+                            <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <TrendingUp className="h-4 w-4 text-orange-400" />
+                                    <span className="text-xs text-zinc-500 uppercase tracking-wide">Avg Speed</span>
+                                </div>
+                                <div className="text-2xl font-semibold font-mono text-white">—</div>
+                                <div className="text-xs text-zinc-600 mt-1">Per problem</div>
                             </div>
-                            <div className="text-3xl font-mono font-bold">-- min</div>
-                            <div className="text-xs text-zinc-500 mt-1">Per problem</div>
                         </div>
                     </div>
 

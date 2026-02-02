@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Clock } from 'lucide-react';
 
 interface TimerProps {
     initialSeconds: number;
@@ -47,38 +46,55 @@ export default function Timer({ initialSeconds, onComplete, isActive }: TimerPro
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     const progress = initialSeconds > 0 ? (timeLeft / initialSeconds) * 100 : 0;
+    const isUrgent = timeLeft < 60;
+    const isCritical = timeLeft < 30;
 
     return (
         <div className="flex flex-col items-center">
-            <div className="relative mb-4 flex h-48 w-48 items-center justify-center rounded-full bg-zinc-900 shadow-[0_0_40px_-5px_theme(colors.indigo.500/0.3)] ring-1 ring-white/10">
+            {/* Timer Ring */}
+            <div className="relative mb-6 flex h-52 w-52 items-center justify-center">
+                {/* Glow effect */}
+                <div className={`absolute inset-0 rounded-full blur-2xl transition-all duration-500 ${isCritical ? 'bg-red-500/20' : isUrgent ? 'bg-orange-500/15' : 'bg-indigo-500/10'
+                    }`} />
+
+                {/* Background ring */}
+                <div className="absolute inset-0 rounded-full bg-[#0d0d0f] border border-white/[0.06]" />
+
+                {/* SVG Progress */}
                 <svg className="absolute inset-0 h-full w-full -rotate-90 transform">
+                    {/* Track */}
                     <circle
-                        cx="96"
-                        cy="96"
-                        r="88"
+                        cx="104"
+                        cy="104"
+                        r="96"
                         fill="none"
-                        className="stroke-zinc-800"
-                        strokeWidth="12"
+                        className="stroke-white/[0.04]"
+                        strokeWidth="8"
                     />
+                    {/* Progress */}
                     <circle
-                        cx="96"
-                        cy="96"
-                        r="88"
+                        cx="104"
+                        cy="104"
+                        r="96"
                         fill="none"
-                        className={`transition-all duration-1000 ease-linear ${timeLeft < 60 ? 'stroke-red-500' : 'stroke-indigo-500'
+                        className={`transition-all duration-1000 ease-linear ${isCritical ? 'stroke-red-500' : isUrgent ? 'stroke-orange-500' : 'stroke-indigo-500'
                             }`}
-                        strokeWidth="12"
-                        strokeDasharray={2 * Math.PI * 88}
-                        strokeDashoffset={2 * Math.PI * 88 * (1 - progress / 100)}
+                        strokeWidth="8"
+                        strokeDasharray={2 * Math.PI * 96}
+                        strokeDashoffset={2 * Math.PI * 96 * (1 - progress / 100)}
                         strokeLinecap="round"
                     />
                 </svg>
 
-                <div className="flex flex-col items-center">
-                    <span className="font-mono text-5xl font-bold text-white">
+                {/* Time Display */}
+                <div className="relative flex flex-col items-center z-10">
+                    <span className={`font-mono text-5xl font-semibold tracking-tight transition-colors ${isCritical ? 'text-red-500' : isUrgent ? 'text-orange-400' : 'text-white'
+                        }`}>
                         {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
                     </span>
-                    <span className="text-sm font-medium text-zinc-500">REMAINING</span>
+                    <span className="text-xs font-medium text-zinc-600 uppercase tracking-wider mt-1">
+                        remaining
+                    </span>
                 </div>
             </div>
         </div>
