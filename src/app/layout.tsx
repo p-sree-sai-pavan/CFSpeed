@@ -52,7 +52,11 @@ async function getSessionWithTimeout(timeoutMs: number = 2000) {
       timeoutPromise
     ]) as Session | null;
     return session;
-  } catch (error) {
+  } catch (error: any) {
+    // Re-throw Next.js dynamic usage errors so it can switch to dynamic rendering
+    if (error?.digest === 'DYNAMIC_SERVER_USAGE') {
+      throw error;
+    }
     console.error('Session fetch failed or timed out:', error);
     return null;
   }
