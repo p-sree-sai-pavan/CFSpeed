@@ -20,7 +20,10 @@ async function getSessionWithTimeout(timeoutMs: number = 5000) {
       timeoutPromise
     ]);
     return session;
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.digest === 'DYNAMIC_SERVER_USAGE') {
+      throw error;
+    }
     console.error('Session fetch failed:', error);
     return null;
   }
