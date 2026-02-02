@@ -3,9 +3,18 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { verifyCFHandle } from "@/lib/cf";
+import { rateLimit } from "@/lib/ratelimit";
+import { validateCSRF } from "@/lib/csrf";
+
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+    if (!validateCSRF(request)) return NextResponse.json({ error: 'Invalid Origin' }, { status: 403 });
+
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+    const limit = await rateLimit(ip, { limit: 10, windowMs: 60 * 1000 });
+    if (!limit.success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+
     // 1. Check Auth
     const session = await getServerSession(authOptions);
     if (!session || !session.user || !session.user.email) {
@@ -14,10 +23,17 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
-        const { handle } = body;
+        let { handle } = body;
 
-        if (!handle) {
+        // [H-1] Strict Input Validation
+        if (!handle || typeof handle !== 'string') {
             return NextResponse.json({ error: 'Handle is required' }, { status: 400 });
+        }
+
+        handle = handle.trim();
+        // CF handles: 3-24 chars, alphanumeric + underscore/hyphen
+        if (handle.length < 3 || handle.length > 24 || !/^[a-zA-Z0-9_\-]+$/.test(handle)) {
+            return NextResponse.json({ error: 'Invalid handle format' }, { status: 400 });
         }
 
         // 2. Verify with Codeforces

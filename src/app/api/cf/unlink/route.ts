@@ -2,10 +2,13 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { validateCSRF } from "@/lib/csrf";
 
 export const dynamic = 'force-dynamic';
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
+    if (!validateCSRF(request)) return NextResponse.json({ error: 'Invalid Origin' }, { status: 403 });
+
     const session = await getServerSession(authOptions);
     if (!session || !session.user || !session.user.email) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

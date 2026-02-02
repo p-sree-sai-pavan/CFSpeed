@@ -12,6 +12,12 @@ async function getStageData(stage: string) {
     try {
         const fileContent = await fs.readFile(filePath, 'utf-8');
         const data = JSON.parse(fileContent);
+
+        // [H-6] Prevent unbounded memory growth
+        if (Object.keys(stageCache).length > 20) {
+            for (const key in stageCache) delete stageCache[key];
+        }
+
         stageCache[stage] = data;
         return data;
     } catch {

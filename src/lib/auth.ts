@@ -15,16 +15,15 @@ export const authOptions: AuthOptions = {
         async session({ session, user }: any) {
             if (session.user) {
                 session.user.id = user.id;
-                // Include CF handle in session if available in DB
-                const dbUser = await prisma.user.findUnique({
-                    where: { id: user.id },
-                    select: { cfHandle: true, cfRating: true },
-                });
-                session.user.cfHandle = dbUser?.cfHandle;
-                session.user.cfRating = dbUser?.cfRating;
+                // User object from adapter typically contains all fields from DB
+                // We cast to any to access custom fields if types aren't fully extended,
+                // avoiding the extra DB query.
+                const adapterUser = user as any;
+                session.user.cfHandle = adapterUser.cfHandle;
+                session.user.cfRating = adapterUser.cfRating;
             }
             return session;
         },
     },
-    debug: process.env.NODE_ENV === 'development',
+    debug: process.env.NEXTAUTH_DEBUG === 'true',
 };

@@ -2,11 +2,24 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { rateLimit } from "@/lib/ratelimit";
+import { validateCSRF } from "@/lib/csrf";
 
 export const dynamic = 'force-dynamic';
 
 // Background sync of CF submissions to DB
-export async function POST() {
+export async function POST(request: Request) {
+    // 1. Security Checks
+    if (!validateCSRF(request)) {
+        return NextResponse.json({ error: 'Invalid Origin' }, { status: 403 });
+    }
+
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+    const limitParams = await rateLimit(ip, { limit: 5, windowMs: 60 * 1000 }); // 5 syncs/min
+    if (!limitParams.success) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -47,21 +60,15 @@ export async function POST() {
             }
         }
 
-        // Upsert all solved problems
-        for (const sp of solvedProblems) {
-            await prisma.solvedProblem.upsert({
-                where: {
-                    userId_problemId: {
-                        userId: user.id,
-                        problemId: sp.problemId
-                    }
-                },
-                update: {}, // No update needed if exists
-                create: {
+        // Batch insert all solved problems (O(1) transaction)
+        if (solvedProblems.length > 0) {
+            await prisma.solvedProblem.createMany({
+                data: solvedProblems.map(sp => ({
                     userId: user.id,
                     problemId: sp.problemId,
                     solvedAt: sp.solvedAt
-                }
+                })),
+                skipDuplicates: true
             });
         }
 

@@ -7,6 +7,7 @@ import ActivityHeatmap from '@/components/profile/ActivityHeatmap';
 import AuthGuard from '@/components/AuthGuard';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function ProfilePage() {
     const { data: session } = useSession();
@@ -14,6 +15,7 @@ export default function ProfilePage() {
     const [history, setHistory] = useState<any[]>([]);
     const [submissions, setSubmissions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
     const [showUnlinkModal, setShowUnlinkModal] = useState(false);
 
     // H4: Safe sessionStorage wrapper for incognito/restricted environments
@@ -56,6 +58,7 @@ export default function ProfilePage() {
         }
 
         setLoading(true);
+        setError(false);
 
         // H8: Proper abort controller with cleanup
         const controller = new AbortController();
@@ -78,6 +81,8 @@ export default function ProfilePage() {
                 const statusData = statusResult.status === 'fulfilled' ? statusResult.value : null;
 
                 if (userData?.status === 'OK' && userData.result.length > 0) setCfUser(userData.result[0]);
+                else throw new Error('Failed to fetch user data'); // Trigger error if user fetch fails
+
                 if (ratingData?.status === 'OK') setHistory(ratingData.result);
                 if (statusData?.status === 'OK') setSubmissions(statusData.result);
 
@@ -94,6 +99,7 @@ export default function ProfilePage() {
             } catch (err) {
                 if (isMounted && !(err instanceof Error && err.name === 'AbortError')) {
                     console.error('Profile fetch error:', err);
+                    setError(true);
                 }
             } finally {
                 if (isMounted) setLoading(false);
@@ -231,6 +237,23 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
                             </div>
+                        ) : error ? (
+                            /* Error State */
+                            <div className="text-center py-6 md:py-8">
+                                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-3 md:mb-4">
+                                    <Unlink className="h-6 w-6 md:h-8 md:w-8 text-red-500" />
+                                </div>
+                                <h2 className="text-base md:text-lg font-semibold text-white mb-2">Failed to load profile</h2>
+                                <p className="text-zinc-500 text-xs md:text-sm mb-4 md:mb-6 max-w-xs mx-auto">
+                                    Codeforces API request failed. Please check your connection.
+                                </p>
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="px-4 md:px-5 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium transition-colors"
+                                >
+                                    Retry
+                                </button>
+                            </div>
                         ) : (
                             /* Link Account */
                             <div className="text-center py-6 md:py-8">
@@ -284,7 +307,9 @@ export default function ProfilePage() {
                         <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] p-4 md:p-6 mb-4 md:mb-6">
                             <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-3 md:mb-4">Activity</h3>
                             <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
-                                <ActivityHeatmap submissions={submissions} />
+                                <ErrorBoundary>
+                                    <ActivityHeatmap submissions={submissions} />
+                                </ErrorBoundary>
                             </div>
                         </div>
                     )}

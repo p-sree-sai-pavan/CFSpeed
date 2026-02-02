@@ -6,11 +6,9 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         // Try to connect to DB
-        const userCount = await prisma.user.count();
         return NextResponse.json({
             status: 'ok',
             db: 'connected',
-            userCount,
             timestamp: new Date().toISOString()
         }, { status: 200 });
     } catch (error: any) {

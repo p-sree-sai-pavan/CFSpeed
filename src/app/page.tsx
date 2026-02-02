@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import UpcomingContests from '@/components/UpcomingContests';
 import LandingPage from '@/components/LandingPage';
 import { ArrowRight, Zap, Trophy } from 'lucide-react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -101,7 +102,9 @@ export default async function Home() {
         </div>
 
         {/* Upcoming Contests */}
-        <UpcomingContests />
+        <ErrorBoundary>
+          <UpcomingContests />
+        </ErrorBoundary>
       </div>
     </div>
   );

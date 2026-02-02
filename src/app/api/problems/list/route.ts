@@ -4,15 +4,22 @@ import { authOptions } from "@/lib/auth";
 import { getSolvedFromCache } from '@/lib/codeforces';
 import { prisma } from '@/lib/db';
 import { getProblemsList, filterAndSortProblems } from '@/lib/problemsCache';
+import { rateLimit } from '@/lib/ratelimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+    // Higher limit for browsing: 60 req/min
+    const limitCheck = await rateLimit(ip, { limit: 60, windowMs: 60 * 1000 });
+    if (!limitCheck.success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+
     const session = await getServerSession(authOptions);
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    // [M-2] Enforce pagination limit (max 100)
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50')));
     const search = searchParams.get('search') || '';
     const levelFilter = searchParams.get('level') || '';
     const stageFilter = searchParams.get('stage') || '';

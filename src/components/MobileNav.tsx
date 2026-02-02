@@ -40,8 +40,9 @@ export default function MobileNav() {
                             href={tab.href}
                             className={`flex flex-col items-center justify-center gap-0.5 min-w-[56px] py-2 rounded-xl transition-all ${isActive
                                 ? 'text-rose-500'
-                                : 'text-zinc-600 active:text-zinc-400'
+                                : 'text-zinc-400 active:text-zinc-300'
                                 }`}
+                            aria-current={isActive ? 'page' : undefined}
                         >
                             <div className={`relative p-1.5 rounded-lg transition-all ${isActive ? 'bg-rose-500/10' : ''
                                 }`}>
@@ -57,6 +58,6 @@ export default function MobileNav() {
                     );
                 })}
             </div>
-        </nav>
+        </nav >
     );
 }

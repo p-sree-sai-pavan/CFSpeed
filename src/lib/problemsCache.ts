@@ -18,18 +18,21 @@ interface Problem {
 
 let problemsCache: Problem[] | null = null;
 let cacheTimestamp = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // Cache for 24 hours (effectively static)
 
 async function loadProblemsData(): Promise<Problem[]> {
-    const now = Date.now();
-    
-    if (problemsCache && (now - cacheTimestamp) < CACHE_DURATION) {
+    // [H-4] Optimization: Return cached data immediately if available.
+    // Static JSON doesn't change at runtime, so we don't need short expiry.
+    if (problemsCache) {
         return problemsCache;
     }
 
+    // Fix: Define now
+    const now = Date.now();
+
     let filePath = path.join(process.cwd(), 'public', 'categories.json');
     let fileContents: string;
-    
+
     try {
         fileContents = await fs.readFile(filePath, 'utf8');
     } catch {
@@ -78,7 +81,7 @@ async function loadProblemsData(): Promise<Problem[]> {
 
 export async function getProblemsList(solvedSet: Set<string>): Promise<Problem[]> {
     const problems = await loadProblemsData();
-    
+
     return problems.map(p => {
         const pid = getProblemId(p.contest_id, p.index);
         return {

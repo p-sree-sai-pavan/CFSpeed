@@ -67,7 +67,7 @@ export default function Navbar() {
                                 href={link.href}
                                 className={`relative px-3 py-1.5 text-[13px] font-medium rounded-md transition-all ${isActive
                                     ? 'text-white'
-                                    : 'text-zinc-500 hover:text-zinc-300'
+                                    : 'text-zinc-400 hover:text-zinc-200'
                                     }`}
                             >
                                 {link.label}

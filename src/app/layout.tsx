@@ -37,11 +37,16 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="en">
       <body
@@ -58,7 +63,7 @@ export default function RootLayout({
           speed={150}
           shadow="0 0 10px #f43f5e,0 0 5px #f43f5e"
         />
-        <Providers>
+        <Providers session={session}>
           <Navbar />
           <ErrorBoundary>
             <PageTransition>

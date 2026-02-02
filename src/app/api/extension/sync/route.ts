@@ -2,10 +2,15 @@ import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/db";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { rateLimit } from "@/lib/ratelimit";
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+    const limitCheck = await rateLimit(ip, { limit: 120, windowMs: 60 * 1000 }); // 2 req/sec allowed for sync
+    if (!limitCheck.success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
@@ -13,7 +18,8 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { token, verdict, problemId } = body;
+        // [H-3] Removed unused token parameter
+        const { verdict, problemId } = body;
 
         if (!verdict || !problemId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
