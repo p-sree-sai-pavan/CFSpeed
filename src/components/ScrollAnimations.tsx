@@ -37,7 +37,16 @@ export function ScrollFade({ children, className = '', delay = 0 }: ScrollFadePr
         );
 
         observer.observe(el);
-        return () => observer.disconnect();
+
+        // Failsafe: Force visibility after a short delay if observer fails
+        const failsafeTimeout = setTimeout(() => {
+            setIsVisible(true);
+        }, 500);
+
+        return () => {
+            observer.disconnect();
+            clearTimeout(failsafeTimeout);
+        };
     }, [delay]);
 
     return (
@@ -85,7 +94,16 @@ export function ScrollScale({ children, className = '', delay = 0 }: ScrollFadeP
         );
 
         observer.observe(el);
-        return () => observer.disconnect();
+
+        // Failsafe: Force visibility after a short delay if observer fails
+        const failsafeTimeout = setTimeout(() => {
+            setIsVisible(true);
+        }, 500);
+
+        return () => {
+            observer.disconnect();
+            clearTimeout(failsafeTimeout);
+        };
     }, [delay]);
 
     return (

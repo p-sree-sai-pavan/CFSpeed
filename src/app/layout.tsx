@@ -37,15 +37,33 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-import { getServerSession } from "next-auth";
+import { getServerSession, Session } from "next-auth";
 import { authOptions } from "@/lib/auth";
+
+// Timeout wrapper to prevent infinite hangs
+async function getSessionWithTimeout(timeoutMs: number = 2000) {
+  try {
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Session fetch timeout')), timeoutMs);
+    });
+
+    const session = await Promise.race([
+      getServerSession(authOptions),
+      timeoutPromise
+    ]) as Session | null;
+    return session;
+  } catch (error) {
+    console.error('Session fetch failed or timed out:', error);
+    return null;
+  }
+}
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
+  const session = await getSessionWithTimeout();
 
   return (
     <html lang="en">
