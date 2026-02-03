@@ -11,16 +11,28 @@ export const authOptions: AuthOptions = {
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
         }),
     ],
+    session: {
+        strategy: "jwt"
+    },
     callbacks: {
-        async session({ session, user }: any) {
+        async jwt({ token, user, trigger, session }: any) {
+            if (user) {
+                token.id = user.id;
+                token.cfHandle = user.cfHandle;
+                token.cfRating = user.cfRating;
+            }
+            // Update token if session data is updated
+            if (trigger === "update" && session?.user) {
+                token.cfHandle = session.user.cfHandle;
+                token.cfRating = session.user.cfRating;
+            }
+            return token;
+        },
+        async session({ session, token }: any) {
             if (session.user) {
-                session.user.id = user.id;
-                // User object from adapter typically contains all fields from DB
-                // We cast to any to access custom fields if types aren't fully extended,
-                // avoiding the extra DB query.
-                const adapterUser = user as any;
-                session.user.cfHandle = adapterUser.cfHandle;
-                session.user.cfRating = adapterUser.cfRating;
+                session.user.id = token.id;
+                session.user.cfHandle = token.cfHandle;
+                session.user.cfRating = token.cfRating;
             }
             return session;
         },

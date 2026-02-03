@@ -2,37 +2,29 @@ import fs from 'fs/promises';
 import path from 'path';
 import { getProblemId } from './utils';
 
-const stageCache: Record<string, any> = {};
+import { unstable_cache } from 'next/cache';
 
-async function getStageData(stage: string) {
-    if (stageCache[stage]) return stageCache[stage];
-
-    let filePath = path.join(process.cwd(), 'public', 'categories', `${stage}.json`);
-
-    try {
-        const fileContent = await fs.readFile(filePath, 'utf-8');
-        const data = JSON.parse(fileContent);
-
-        // [H-6] Prevent unbounded memory growth
-        if (Object.keys(stageCache).length > 20) {
-            for (const key in stageCache) delete stageCache[key];
-        }
-
-        stageCache[stage] = data;
-        return data;
-    } catch {
-        filePath = path.join(process.cwd(), 'cfspeed', 'public', 'categories', `${stage}.json`);
+const getStageData = unstable_cache(
+    async (stage: string) => {
+        let filePath = path.join(process.cwd(), 'public', 'categories', `${stage}.json`);
         try {
             const fileContent = await fs.readFile(filePath, 'utf-8');
-            const data = JSON.parse(fileContent);
-            stageCache[stage] = data;
-            return data;
-        } catch (error) {
-            console.error(`[getStageData] Error loading ${stage}:`, error);
-            return null;
+            return JSON.parse(fileContent);
+        } catch {
+            // Fallback for Vercel file system weirdness if needed
+            filePath = path.join(process.cwd(), 'cfspeed', 'public', 'categories', `${stage}.json`);
+            try {
+                const fileContent = await fs.readFile(filePath, 'utf-8');
+                return JSON.parse(fileContent);
+            } catch (error) {
+                console.error(`[getStageData] Error loading ${stage}:`, error);
+                return null;
+            }
         }
-    }
-}
+    },
+    ['stage-data'], // Key parts
+    { revalidate: 3600, tags: ['stages'] } // Cache for 1 hour
+);
 
 export async function getRandomProblem(stage: string, level: string, tier: string, excludeSet?: Set<string>) {
     console.log(`[getRandomProblem] Request: ${stage} / ${level} / ${tier}`);

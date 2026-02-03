@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUpcomingContests } from '@/lib/cf';
+import { getUpcomingContests } from '@/lib/codeforces';
 
 // Cache this route for 5 minutes at the edge
 export const revalidate = 300;

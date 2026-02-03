@@ -21,6 +21,8 @@ export async function DELETE(request: Request) {
                 cfHandle: null,
                 cfRating: null,
                 lastCfSync: null,
+                lastSyncedSubmissionId: null,
+                solvedProblemIds: [],
             },
         });
 

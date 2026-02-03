@@ -1,64 +1,84 @@
 import { NextResponse } from 'next/server';
 
-interface RateLimitConfig {
+export interface RateLimitConfig {
     limit: number;
     windowMs: number;
 }
 
-// Simple in-memory store for rate limiting
-// Note: In a multi-instance production environment (e.g., specific Vercel configs or Kubernetes),
-// this should be replaced with Redis (Upstash/KV).
-// For single-instance or sticky sessions, this works.
-const store = new Map<string, { count: number; resetTime: number }>();
+export interface RateLimiterResponse {
+    success: boolean;
+    limit: number;
+    remaining: number;
+    reset: number;
+}
 
-// Cleanup stale entries every minute
-setInterval(() => {
-    const now = Date.now();
-    for (const [key, value] of store.entries()) {
-        if (now > value.resetTime) {
-            store.delete(key);
+export interface RateLimitBackend {
+    check(identifier: string, config: RateLimitConfig): Promise<RateLimiterResponse>;
+}
+
+// Memory Backend (Default)
+class MemoryRateLimitBackend implements RateLimitBackend {
+    private store = new Map<string, { count: number; resetTime: number }>();
+
+    constructor() {
+        // Cleanup stale entries every minute
+        // Note: SetInterval in serverless might not persist, but it's fine for process lifetime
+        if (typeof setInterval !== 'undefined') {
+            setInterval(() => this.cleanup(), 60000);
         }
     }
-}, 60000);
 
-export async function rateLimit(identifier: string, config: RateLimitConfig = { limit: 60, windowMs: 60 * 1000 }) {
-    const now = Date.now();
-    const key = identifier;
-    const record = store.get(key);
-
-    if (!record || now > record.resetTime) {
-        store.set(key, {
-            count: 1,
-            resetTime: now + config.windowMs
-        });
-        return { success: true };
+    private cleanup() {
+        const now = Date.now();
+        for (const [key, value] of this.store.entries()) {
+            if (now > value.resetTime) {
+                this.store.delete(key);
+            }
+        }
     }
 
-    if (record.count >= config.limit) {
-        return { success: false, limit: config.limit, remaining: 0, reset: record.resetTime };
-    }
+    async check(identifier: string, config: RateLimitConfig): Promise<RateLimiterResponse> {
+        const now = Date.now();
+        const record = this.store.get(identifier);
 
-    record.count++;
-    return {
-        success: true,
-        limit: config.limit,
-        remaining: config.limit - record.count,
-        reset: record.resetTime
-    };
+        if (!record || now > record.resetTime) {
+            this.store.set(identifier, {
+                count: 1,
+                resetTime: now + config.windowMs
+            });
+            return { success: true, limit: config.limit, remaining: config.limit - 1, reset: now + config.windowMs };
+        }
+
+        if (record.count >= config.limit) {
+            return { success: false, limit: config.limit, remaining: 0, reset: record.resetTime };
+        }
+
+        record.count++;
+        return {
+            success: true,
+            limit: config.limit,
+            remaining: config.limit - record.count,
+            reset: record.resetTime
+        };
+    }
+}
+
+// Global instance to share state across imports in the same process
+const defaultBackend = new MemoryRateLimitBackend();
+
+export async function rateLimit(identifier: string, config: RateLimitConfig = { limit: 10, windowMs: 60 * 1000 }): Promise<RateLimiterResponse> {
+    return defaultBackend.check(identifier, config);
 }
 
 export function withRateLimit(handler: Function, limit = 10, windowMs = 60000) {
     return async (request: Request, context?: any) => {
-        // Use IP or User ID as identifier
-        // In Next.js App Router, request.ip might be empty in dev, fallback to header
         const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
-
         const result = await rateLimit(ip, { limit, windowMs });
 
         if (!result.success) {
             return NextResponse.json(
-                { error: 'Too many requests', retryAfter: Math.ceil((result.reset! - Date.now()) / 1000) },
-                { status: 429, headers: { 'Retry-After': String(Math.ceil((result.reset! - Date.now()) / 1000)) } }
+                { error: 'Too many requests', retryAfter: Math.ceil((result.reset - Date.now()) / 1000) },
+                { status: 429, headers: { 'Retry-After': String(Math.ceil((result.reset - Date.now()) / 1000)) } }
             );
         }
 

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { verifyCFHandle } from "@/lib/cf";
+import { verifyCFHandle } from "@/lib/codeforces";
 import { rateLimit } from "@/lib/ratelimit";
 import { validateCSRF } from "@/lib/csrf";
 
@@ -58,7 +58,11 @@ export async function POST(request: Request) {
                 cfHandle: cfUser.handle, // Use canonical handle from CF (case-corrected)
                 cfRating: cfUser.rating || 0,
                 image: session.user.image, // Keep existing image or update if needed
-            },
+                // Reset sync state for new handle
+                lastCfSync: null,
+                lastSyncedSubmissionId: null,
+                solvedProblemIds: [],
+            } as any,
         });
 
         return NextResponse.json({

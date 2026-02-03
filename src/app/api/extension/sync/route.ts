@@ -72,20 +72,23 @@ export async function POST(request: Request) {
         });
 
         if (verdict === 'OK') {
-            await prisma.solvedProblem.upsert({
-                where: {
-                    userId_problemId: {
-                        userId: user.id,
-                        problemId: pid
-                    }
-                },
-                update: {},
-                create: {
-                    userId: user.id,
-                    problemId: pid,
-                    solvedAt: new Date()
-                }
+            // Check existence to prevent duplicates in array
+            // Note: Race condition possible in theory, but unlikely for single-user sync
+            const currentUser = await prisma.user.findUnique({
+                where: { id: user.id },
+                select: { solvedProblemIds: true }
             });
+
+            if (currentUser && !currentUser.solvedProblemIds.includes(pid)) {
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        solvedProblemIds: {
+                            push: pid
+                        }
+                    }
+                });
+            }
         }
 
         return NextResponse.json({

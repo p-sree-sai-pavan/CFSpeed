@@ -22,61 +22,75 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000; // Cache for 24 hours (effectively s
 
 async function loadProblemsData(): Promise<Problem[]> {
     // [H-4] Optimization: Return cached data immediately if available.
-    // Static JSON doesn't change at runtime, so we don't need short expiry.
     if (problemsCache) {
         return problemsCache;
     }
 
-    // Fix: Define now
     const now = Date.now();
+    const categoriesDir = path.join(process.cwd(), 'public', 'categories');
 
-    let filePath = path.join(process.cwd(), 'public', 'categories.json');
-    let fileContents: string;
+    // In Vercel, we might need to adjust path if strictly finding files
+    // But since we know the categories (elite, excellent, etc.), we could hardcode them 
+    // to avoid readdir overhead or permission issues.
+    // However, readdir is more robust for adding new categories.
 
     try {
-        fileContents = await fs.readFile(filePath, 'utf8');
-    } catch {
-        filePath = path.join(process.cwd(), 'cfspeed', 'public', 'categories.json');
-        fileContents = await fs.readFile(filePath, 'utf8');
-    }
-    const categoriesData = JSON.parse(fileContents);
+        const files = await fs.readdir(categoriesDir);
+        const jsonFiles = files.filter(f => f.endsWith('.json'));
 
-    const problemMap = new Map<string, Problem>();
+        const problemMap = new Map<string, Problem>();
 
-    for (const [stageKey, stageData] of Object.entries(categoriesData) as [string, any][]) {
-        if (!stageData.tiers) continue;
+        // Load all stages in parallel
+        await Promise.all(jsonFiles.map(async (file) => {
+            const filePath = path.join(categoriesDir, file);
+            // Derive stage from filename (e.g. "elite.json" -> "elite")
+            const stageKey = path.basename(file, '.json');
 
-        for (const [tierKey, tierData] of Object.entries(stageData.tiers) as [string, any][]) {
-            if (!tierData.problems) continue;
+            try {
+                const content = await fs.readFile(filePath, 'utf8');
+                const stageData = JSON.parse(content);
 
-            const levelKey = TIER_TO_LEVEL[tierKey] || tierKey;
+                if (!stageData.tiers) return;
 
-            for (const p of tierData.problems) {
-                const pid = getProblemId(p.contest_id, p.index);
+                for (const [tierKey, tierData] of Object.entries(stageData.tiers) as [string, any][]) {
+                    if (!tierData.problems) continue;
 
-                if (problemMap.has(pid)) continue;
+                    const levelKey = TIER_TO_LEVEL[tierKey] || tierKey;
 
-                const problem: Problem = {
-                    contest_id: p.contest_id,
-                    index: p.index,
-                    name: p.name,
-                    rating: p.rating,
-                    tags: p.tags || [],
-                    stage: stageKey,
-                    level: levelKey,
-                    status: 'unsolved',
-                    nameLower: p.name.toLowerCase(),
-                    tagsLower: (p.tags || []).map((t: string) => t.toLowerCase())
-                };
+                    for (const p of tierData.problems) {
+                        const pid = getProblemId(p.contest_id, p.index);
 
-                problemMap.set(pid, problem);
+                        if (problemMap.has(pid)) continue;
+
+                        const problem: Problem = {
+                            contest_id: p.contest_id,
+                            index: p.index,
+                            name: p.name,
+                            rating: p.rating,
+                            tags: p.tags || [],
+                            stage: stageKey,
+                            level: levelKey,
+                            status: 'unsolved',
+                            nameLower: p.name.toLowerCase(),
+                            tagsLower: (p.tags || []).map((t: string) => t.toLowerCase())
+                        };
+
+                        problemMap.set(pid, problem);
+                    }
+                }
+            } catch (err) {
+                console.error(`[ProblemsCache] Failed to load ${file}:`, err);
             }
-        }
-    }
+        }));
 
-    problemsCache = Array.from(problemMap.values());
-    cacheTimestamp = now;
-    return problemsCache;
+        problemsCache = Array.from(problemMap.values());
+        cacheTimestamp = now;
+        return problemsCache;
+
+    } catch (err) {
+        console.error('[ProblemsCache] Failed to read categories dir:', err);
+        return [];
+    }
 }
 
 export async function getProblemsList(solvedSet: Set<string>): Promise<Problem[]> {

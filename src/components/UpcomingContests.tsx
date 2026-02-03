@@ -1,5 +1,5 @@
 import { Calendar, Clock, ExternalLink } from 'lucide-react';
-import { getUpcomingContests, type Contest } from '@/lib/cf';
+import { getUpcomingContests, type Contest } from '@/lib/codeforces';
 
 export default async function UpcomingContests() {
     let contests: Contest[] = [];

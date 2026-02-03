@@ -48,12 +48,13 @@ model User {
   cfRating      Int?
   lastCfSync    DateTime? // When CF data was last synced
   createdAt     DateTime  @default(now())
+  lastSyncedSubmissionId Int? // Optimization: Track last synced submission to prevent full re-fetch
+  solvedProblemIds String[]   @default([]) // Optimization: Store solved problems as array to avoid 100M+ rows
 
   accounts        Account[]
   sessions        Session[]
   progress        Progress[]
   practiceSession PracticeSession[]
-  solvedProblems  SolvedProblem[]
 }
 
 model VerificationToken {
@@ -100,15 +101,4 @@ model PracticeSession {
 }
 
 // Cached CF solved problems for instant lookups
-model SolvedProblem {
-  id        String   @id @default(cuid())
-  userId    String
-  problemId String   // e.g., "1234A"
-  solvedAt  DateTime // When solved on CF
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, problemId])
-  @@index([userId])
-}
+// REMOVED: SolvedProblem table replaced by User.solvedProblemIds array for scalability

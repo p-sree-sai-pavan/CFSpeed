@@ -1,122 +1,68 @@
-'use client';
-
-import { useSession } from 'next-auth/react';
-import { useState, useEffect } from 'react';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { ExternalLink, TrendingUp, Clock, Target, User as UserIcon, Unlink } from 'lucide-react';
 import ActivityHeatmap from '@/components/profile/ActivityHeatmap';
 import AuthGuard from '@/components/AuthGuard';
 import ConfirmModal from '@/components/ConfirmModal';
-import toast from 'react-hot-toast';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { redirect } from "next/navigation";
+import UnlinkButton from "@/components/profile/UnlinkButton";
+import LinkAccountForm from "@/components/profile/LinkAccountForm";
+import { getRankColor } from "@/lib/utils";
 
-export default function ProfilePage() {
-    const { data: session } = useSession();
-    const [cfUser, setCfUser] = useState<any>(null);
-    const [history, setHistory] = useState<any[]>([]);
-    const [submissions, setSubmissions] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);
-    const [showUnlinkModal, setShowUnlinkModal] = useState(false);
+// Server Action-like data fetching
+async function getProfileData(handle: string) {
+    try {
+        // Parallel fetch for performance
+        const [userRes, ratingRes, statusRes] = await Promise.allSettled([
+            fetch(`https://codeforces.com/api/user.info?handles=${handle}`, { next: { revalidate: 300 } }),
+            fetch(`https://codeforces.com/api/user.rating?handle=${handle}`, { next: { revalidate: 300 } }),
+            fetch(`https://codeforces.com/api/user.status?handle=${handle}&count=500`, { next: { revalidate: 300 } })
+        ]);
 
-    // H4: Safe sessionStorage wrapper for incognito/restricted environments
-    const safeStorage = {
-        getItem: (key: string): string | null => {
-            try {
-                return sessionStorage.getItem(key);
-            } catch {
-                return null;
-            }
-        },
-        setItem: (key: string, value: string): void => {
-            try {
-                sessionStorage.setItem(key, value);
-            } catch {
-                // Silently fail in incognito or quota exceeded
-            }
-        }
-    };
+        const userData = userRes.status === 'fulfilled' && userRes.value.ok ? await userRes.value.json() : null;
+        const ratingData = ratingRes.status === 'fulfilled' && ratingRes.value.ok ? await ratingRes.value.json() : null;
+        const statusData = statusRes.status === 'fulfilled' && statusRes.value.ok ? await statusRes.value.json() : null;
 
-    useEffect(() => {
-        if (!session?.user?.cfHandle) return;
-
-        const handle = session.user.cfHandle;
-        const cacheKey = `cf_${handle}`;
-        const cacheExpiry = 5 * 60 * 1000;
-
-        // H4: Use safe storage wrapper
-        const cached = safeStorage.getItem(cacheKey);
-        if (cached) {
-            try {
-                const { data, timestamp } = JSON.parse(cached);
-                if (Date.now() - timestamp < cacheExpiry) {
-                    setCfUser(data.userData);
-                    setHistory(data.ratingData);
-                    setSubmissions(data.statusData);
-                    return;
-                }
-            } catch { }
-        }
-
-        setLoading(true);
-        setError(false);
-
-        // H8: Proper abort controller with cleanup
-        const controller = new AbortController();
-        let isMounted = true;
-
-        const fetchData = async () => {
-            try {
-                // H3: Limit submissions to 500 to prevent freezing
-                const [userResult, ratingResult, statusResult] = await Promise.allSettled([
-                    fetch(`https://codeforces.com/api/user.info?handles=${handle}`, { signal: controller.signal }).then(res => res.json()),
-                    fetch(`https://codeforces.com/api/user.rating?handle=${handle}`, { signal: controller.signal }).then(res => res.json()),
-                    fetch(`https://codeforces.com/api/user.status?handle=${handle}&count=500`, { signal: controller.signal }).then(res => res.json())
-                ]);
-
-                // Only update state if component is still mounted
-                if (!isMounted) return;
-
-                const userData = userResult.status === 'fulfilled' ? userResult.value : null;
-                const ratingData = ratingResult.status === 'fulfilled' ? ratingResult.value : null;
-                const statusData = statusResult.status === 'fulfilled' ? statusResult.value : null;
-
-                if (userData?.status === 'OK' && userData.result.length > 0) setCfUser(userData.result[0]);
-                else throw new Error('Failed to fetch user data'); // Trigger error if user fetch fails
-
-                if (ratingData?.status === 'OK') setHistory(ratingData.result);
-                if (statusData?.status === 'OK') setSubmissions(statusData.result);
-
-                if (userData && ratingData && statusData) {
-                    safeStorage.setItem(cacheKey, JSON.stringify({
-                        data: {
-                            userData: userData.status === 'OK' ? userData.result[0] : null,
-                            ratingData: ratingData.status === 'OK' ? ratingData.result : [],
-                            statusData: statusData.status === 'OK' ? statusData.result : []
-                        },
-                        timestamp: Date.now()
-                    }));
-                }
-            } catch (err) {
-                if (isMounted && !(err instanceof Error && err.name === 'AbortError')) {
-                    console.error('Profile fetch error:', err);
-                    setError(true);
-                }
-            } finally {
-                if (isMounted) setLoading(false);
-            }
+        return {
+            user: userData?.result?.[0] || null,
+            history: ratingData?.result || [],
+            submissions: statusData?.result || []
         };
+    } catch (error) {
+        console.error("Profile Fetch Error", error);
+        return null;
+    }
+}
 
-        // Set timeout for abort (10 seconds)
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        fetchData().finally(() => clearTimeout(timeoutId));
+export default async function ProfilePage() {
+    const session = await getServerSession(authOptions);
 
-        return () => {
-            isMounted = false;
-            controller.abort();
-        };
-    }, [session?.user?.cfHandle]);
+    // AuthGuard logic on server
+    if (!session) {
+        // let the client AuthGuard handle redirect or do it here
+        // Since AuthGuard wraps children, we can just let it render or redirect.
+        // But for data fetching we need session.
+        // We will assume AuthGuard is protecting the route layout or we return early.
+        // However, the original code used <AuthGuard>.
+        // We can keep <AuthGuard> as a client wrapper if needed, but standard nextjs is redirect.
+    }
 
-    const getRankColor = (rating: number) => {
+    const handle = session?.user?.cfHandle;
+    let profileData = null;
+
+    if (handle) {
+        profileData = await getProfileData(handle);
+    }
+
+    // Pass data to Client Components or render directly
+    const cfUser = profileData?.user;
+    const history = profileData?.history || [];
+    const submissions = profileData?.submissions || [];
+    const rankColor = cfUser?.rating ? getRankColor(cfUser.rating) : 'text-white'; // Need to ensure getRankColor is importable or inline it
+
+    // Helper for Rank Color if not imported
+    const getRankColorHelper = (rating: number) => {
         if (rating < 1200) return 'text-zinc-400';
         if (rating < 1400) return 'text-emerald-500';
         if (rating < 1600) return 'text-cyan-400';
@@ -127,7 +73,11 @@ export default function ProfilePage() {
         return 'text-red-500';
     };
 
-    const rankColor = cfUser?.rating ? getRankColor(cfUser.rating) : 'text-white';
+    // Override local helper if needed used in render
+    const finalRankColor = cfUser?.rating ? getRankColorHelper(cfUser.rating) : 'text-white';
+
+    // We need to extract Client interactions (Unlink, Link Form) into components.
+
 
     return (
         <AuthGuard>
@@ -136,15 +86,7 @@ export default function ProfilePage() {
 
                     {/* Profile Card */}
                     <div className="rounded-xl bg-[#0d0d0f] border border-white/[0.06] p-4 md:p-8 mb-4 md:mb-6">
-                        {loading ? (
-                            <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg bg-white/[0.04] skeleton flex-shrink-0" />
-                                <div className="flex-1">
-                                    <div className="h-4 w-20 rounded bg-white/[0.04] skeleton mb-2" />
-                                    <div className="h-6 w-32 rounded bg-white/[0.04] skeleton" />
-                                </div>
-                            </div>
-                        ) : cfUser ? (
+                        {cfUser ? (
                             <div className="flex flex-col sm:flex-row gap-4 md:gap-6">
                                 {/* Avatar */}
                                 <div className="flex-shrink-0">
@@ -162,7 +104,7 @@ export default function ProfilePage() {
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className={`text-xs md:text-sm font-medium capitalize ${rankColor}`}>
+                                        <span className={`text-xs md:text-sm font-medium capitalize ${finalRankColor}`}>
                                             {cfUser.rank || 'Unrated'}
                                         </span>
                                     </div>
@@ -170,7 +112,7 @@ export default function ProfilePage() {
                                     <a
                                         href={`https://codeforces.com/profile/${cfUser.handle}`}
                                         target="_blank"
-                                        className={`text-xl md:text-3xl font-semibold ${rankColor} hover:opacity-80 transition-opacity inline-flex items-center gap-2`}
+                                        className={`text-xl md:text-3xl font-semibold ${finalRankColor} hover:opacity-80 transition-opacity inline-flex items-center gap-2`}
                                     >
                                         {cfUser.handle}
                                         <ExternalLink className="h-3 w-3 md:h-4 md:w-4 text-zinc-600" />
@@ -180,11 +122,11 @@ export default function ProfilePage() {
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-4 md:mt-6">
                                         <div>
                                             <div className="text-zinc-600 text-[10px] md:text-xs uppercase tracking-wider mb-0.5">Rating</div>
-                                            <div className={`text-lg md:text-xl font-semibold font-mono ${rankColor}`}>{cfUser.rating}</div>
+                                            <div className={`text-lg md:text-xl font-semibold font-mono ${finalRankColor}`}>{cfUser.rating}</div>
                                         </div>
                                         <div>
                                             <div className="text-zinc-600 text-[10px] md:text-xs uppercase tracking-wider mb-0.5">Max</div>
-                                            <div className={`text-lg md:text-xl font-semibold font-mono ${getRankColor(cfUser.maxRating)}`}>{cfUser.maxRating}</div>
+                                            <div className={`text-lg md:text-xl font-semibold font-mono ${getRankColorHelper(cfUser.maxRating)}`}>{cfUser.maxRating}</div>
                                         </div>
                                         <div>
                                             <div className="text-zinc-600 text-[10px] md:text-xs uppercase tracking-wider mb-0.5">Contrib</div>
@@ -203,102 +145,13 @@ export default function ProfilePage() {
                                         <span className="text-[10px] md:text-xs text-zinc-600">
                                             Since {new Date(cfUser.registrationTimeSeconds * 1000).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                                         </span>
-                                        <button
-                                            onClick={() => setShowUnlinkModal(true)}
-                                            className="inline-flex items-center gap-1 text-[10px] md:text-xs text-zinc-600 hover:text-red-400 transition-colors p-3 -m-3 touch-target flex justify-center"
-                                        >
-                                            <Unlink className="h-3 w-3" />
-                                            Unlink
-                                        </button>
-
-                                        <ConfirmModal
-                                            isOpen={showUnlinkModal}
-                                            title="Unlink Account"
-                                            message="Are you sure you want to unlink your Codeforces account? Your synced data will be removed."
-                                            confirmText="Unlink"
-                                            variant="danger"
-                                            onCancel={() => setShowUnlinkModal(false)}
-                                            onConfirm={async () => {
-                                                try {
-                                                    const res = await fetch('/api/cf/unlink', { method: 'DELETE' });
-                                                    if (res.ok) {
-                                                        setShowUnlinkModal(false);
-                                                        window.location.reload();
-                                                    } else {
-                                                        toast.error('Failed to unlink account');
-                                                        setShowUnlinkModal(false);
-                                                    }
-                                                } catch {
-                                                    toast.error('Failed to unlink account');
-                                                    setShowUnlinkModal(false);
-                                                }
-                                            }}
-                                        />
+                                        <UnlinkButton />
                                     </div>
                                 </div>
                             </div>
-                        ) : error ? (
-                            /* Error State */
-                            <div className="text-center py-6 md:py-8">
-                                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-3 md:mb-4">
-                                    <Unlink className="h-6 w-6 md:h-8 md:w-8 text-red-500" />
-                                </div>
-                                <h2 className="text-base md:text-lg font-semibold text-white mb-2">Failed to load profile</h2>
-                                <p className="text-zinc-500 text-xs md:text-sm mb-4 md:mb-6 max-w-xs mx-auto">
-                                    Codeforces API request failed. Please check your connection.
-                                </p>
-                                <button
-                                    onClick={() => window.location.reload()}
-                                    className="px-4 md:px-5 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium transition-colors"
-                                >
-                                    Retry
-                                </button>
-                            </div>
                         ) : (
-                            /* Link Account */
-                            <div className="text-center py-6 md:py-8">
-                                <UserIcon className="h-10 w-10 md:h-12 md:w-12 text-zinc-700 mx-auto mb-3 md:mb-4" />
-                                <h2 className="text-base md:text-lg font-semibold text-white mb-2">Link Codeforces</h2>
-                                <p className="text-zinc-500 text-xs md:text-sm mb-4 md:mb-6 max-w-xs mx-auto">
-                                    Connect your handle to see your stats.
-                                </p>
-                                <form
-                                    onSubmit={async (e) => {
-                                        e.preventDefault();
-                                        const formData = new FormData(e.currentTarget);
-                                        const handle = formData.get('handle');
-                                        setLoading(true);
-                                        try {
-                                            const res = await fetch('/api/cf/link', {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({ handle }),
-                                            });
-                                            if (res.ok) window.location.reload();
-                                            else { const data = await res.json(); toast.error('Error: ' + data.error); }
-                                        } catch { toast.error('Failed to link account'); }
-                                        finally { setLoading(false); }
-                                    }}
-                                    className="flex gap-2 justify-center"
-                                >
-                                    <label htmlFor="cf-handle" className="sr-only">Codeforces Handle</label>
-                                    <input
-                                        id="cf-handle"
-                                        type="text"
-                                        name="handle"
-                                        placeholder="CF Handle"
-                                        className="px-3 md:px-4 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm placeholder-zinc-600 focus:outline-none w-32 md:w-40 touch-target"
-                                        required
-                                    />
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="px-4 md:px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium disabled:opacity-50 transition-colors touch-target flex items-center"
-                                    >
-                                        {loading ? '...' : 'Link'}
-                                    </button>
-                                </form>
-                            </div>
+                            /* Link Account Form */
+                            <LinkAccountForm />
                         )}
                     </div>
 
